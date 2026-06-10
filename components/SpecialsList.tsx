@@ -2,18 +2,46 @@
 import { useMemo, useState } from "react";
 import type { Special } from "@/lib/seedData";
 
-type Filter = "all" | "now" | "food" | "drink" | "freebie";
+type Sub = "all" | "now" | "food" | "drink" | "freebie";
 
-const I = {
+const ICON = {
   walk: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="13" cy="4" r="2"/><path d="M7 21l3-6 3 2 1 4M10 9l3-1 3 3 2 1M9 13l-2 3"/></svg>,
   shield: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 3l7 3v5c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>,
   check: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M5 12l4 4 10-10"/></svg>,
   info: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>,
   camera: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="12" cy="12.5" r="3.2"/></svg>,
+  search: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>,
+  glass: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 4h14l-7 8z"/><path d="M12 12v6M8 20h8"/></svg>,
 };
 
-const DAYI: Record<string, number> = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
+const CATS: { key: string; label: string; live: boolean; icon: JSX.Element }[] = [
+  { key: "happy_hour", label: "Happy Hour", live: true, icon: ICON.glass },
+  { key: "food", label: "Food", live: false, icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3v18M6 3v5a2 2 0 004 0V3"/><path d="M16 3c-1.3 0-2 2-2 5s.7 3 2 3v10"/></svg> },
+  { key: "drinks", label: "Drinks", live: false, icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 8h12l-1.2 11a2 2 0 01-2 1.8H9.2a2 2 0 01-2-1.8L6 8z"/><path d="M9 8V5a3 3 0 016 0"/></svg> },
+  { key: "pools", label: "Pools", live: false, icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg> },
+  { key: "shows", label: "Shows", live: false, icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9a2 2 0 012-2h14a2 2 0 012 2 2 2 0 000 4 2 2 0 00-2 2H5a2 2 0 01-2-2 2 2 0 000-4z"/><path d="M14 7v10"/></svg> },
+  { key: "clubs", label: "Clubs", live: false, icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg> },
+  { key: "gaming", label: "Gaming", live: false, icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.1" fill="currentColor"/><circle cx="15" cy="15" r="1.1" fill="currentColor"/><circle cx="15" cy="9" r="1.1" fill="currentColor"/><circle cx="9" cy="15" r="1.1" fill="currentColor"/></svg> },
+  { key: "hotels", label: "Hotels", live: false, icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 18v-6a2 2 0 012-2h14a2 2 0 012 2v6M3 14h18M4 18v2M20 18v2M7 10V8a1 1 0 011-1h3a1 1 0 011 1v2"/></svg> },
+];
 
+const GRADS = [
+  "linear-gradient(135deg,#7c3aed,#a855f7)",
+  "linear-gradient(135deg,#e0356e,#f76aa0)",
+  "linear-gradient(135deg,#0f8a5f,#34d399)",
+  "linear-gradient(135deg,#2563eb,#60a5fa)",
+  "linear-gradient(135deg,#ea580c,#fb923c)",
+  "linear-gradient(135deg,#0891b2,#22d3ee)",
+];
+const STOP = new Set(["the", "at", "and", "a", "of", "&"]);
+function initials(name: string) {
+  const words = name.replace(/&/g, " ").split(/\s+/).filter((w) => w && !STOP.has(w.toLowerCase()));
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+  return (words[0] || name).slice(0, 2).toUpperCase();
+}
+function gradOf(id: string) { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 997; return GRADS[h % GRADS.length]; }
+
+const DAYI: Record<string, number> = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
 function parseDays(s: string): Set<number> | null {
   if (!s) return null;
   const t = s.toLowerCase();
@@ -60,20 +88,25 @@ function daysAgo(iso: string) {
   const d = Math.round((Date.now() - new Date(iso).getTime()) / 86400000);
   return d <= 0 ? "today" : d === 1 ? "yesterday" : d + " days ago";
 }
+const sep = " · ";
 
 export default function SpecialsList({ initial }: { initial: Special[] }) {
   const [items, setItems] = useState<(Special & { _fresh?: boolean })[]>(initial);
-  const [filter, setFilter] = useState<Filter>("all");
+  const [cat, setCat] = useState("happy_hour");
+  const [sub, setSub] = useState<Sub>("all");
+  const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState("");
 
+  const activeCat = CATS.find((c) => c.key === cat)!;
   const withOpen = useMemo(() => items.map((s) => ({ s, open: isOpenNow(s) })), [items]);
   const openCount = withOpen.filter((x) => x.open === true).length;
   const shown = useMemo(() => withOpen.filter(({ s, open }) => {
-    if (filter === "all") return true;
-    if (filter === "now") return open === true;
-    return (s as any)[filter];
-  }), [withOpen, filter]);
+    if (q) { const hay = (s.venue + " " + s.summary + " " + s.neighborhood + " " + s.type).toLowerCase(); if (!hay.includes(q.toLowerCase())) return false; }
+    if (sub === "all") return true;
+    if (sub === "now") return open === true;
+    return (s as any)[sub];
+  }), [withOpen, sub, q]);
 
   async function addPhoto() {
     setBusy(true); setToast("");
@@ -96,74 +129,92 @@ export default function SpecialsList({ initial }: { initial: Special[] }) {
     finally { setBusy(false); }
   }
 
-  const chips: [Filter, string][] = [["all", "All"], ["now", "Open now"], ["food", "Food"], ["drink", "Drink"], ["freebie", "Freebies"]];
+  const subs: [Sub, string][] = [["all", "All"], ["now", "Open now"], ["food", "Food"], ["drink", "Drink"], ["freebie", "Freebies"]];
 
   return (
     <>
-      <div className="bar">
-        <div className="bar-inner">
-          <div className="chips">
-            {chips.map(([f, label]) => (
-              <button key={f} className={`chip ${f === "now" ? "now" : ""} ${filter === f ? "on" : ""}`} onClick={() => setFilter(f)}>
-                {label}{f === "now" && openCount ? ` (${openCount})` : ""}
-              </button>
-            ))}
+      <div className="search">
+        <div className="box">{ICON.search}
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search venues, deals, neighborhoods..." />
+        </div>
+      </div>
+
+      <div className="catnav">
+        <div className="row">
+          {CATS.map((c) => (
+            <div key={c.key} className={`cat ${cat === c.key ? "active" : ""} ${c.live ? "" : "soon"}`} onClick={() => { setCat(c.key); setSub("all"); }}>
+              <div className="ic">{c.icon}</div>
+              <span className="lbl">{c.label}</span>
+              {!c.live && <span className="soonbadge">soon</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {!activeCat.live ? (
+        <div className="wrap">
+          <div className="soonpanel">
+            <div className="big">{activeCat.icon}</div>
+            <b>{activeCat.label} is coming soon</b>
+            <p>We&apos;re building out {activeCat.label.toLowerCase()} next &mdash; same freshness and verified pricing you see in Happy Hour. Check back shortly.</p>
           </div>
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="subfilters">
+            <div className="chips">
+              {subs.map(([f, label]) => (
+                <button key={f} className={`chip ${f === "now" ? "now" : ""} ${sub === f ? "on" : ""}`} onClick={() => setSub(f)}>
+                  {label}{f === "now" && openCount ? ` (${openCount})` : ""}
+                </button>
+              ))}
+            </div>
+          </div>
 
-      <div className="wrap">
-        <div className="count"><span className="live-dot" /><span><b>{shown.length}</b> {filter === "now" ? "open right now" : "specials"} near you</span></div>
-
-        <div className="list">
-          {shown.length === 0 && (
-            <div className="empty"><b>Nothing matches yet</b>Try a different filter. <a onClick={() => setFilter("all")}>Show all specials</a></div>
-          )}
-          {shown.map(({ s, open }, i) => {
-            const timing = `${s.days} · ${s.start_time}${s.end_time && s.end_time !== s.start_time ? "–" + s.end_time : ""}`;
-            return (
-            <article key={i} className={`card ${s._fresh ? "fresh" : ""}`}>
-              <div className="c-top">
-                <div>
-                  <div className="c-name">{s.venue}</div>
-                  <div className="c-type">{s.type}</div>
-                </div>
-                <div className="walk">
-                  <span className="min">{I.walk}{s.walk_min} min</span>
-                  <span className="hood">{s.neighborhood}</span>
-                </div>
-              </div>
-
-              <p className="c-summary">{s.summary}</p>
-
-              <div className="tags">
-                {s.food && <span className="t food">Food</span>}
-                {s.drink && <span className="t drink">Drink</span>}
-                {s.freebie && <span className="t free">Freebie</span>}
-                <span className="t">{timing}</span>
-              </div>
-
-              <div className="c-foot">
-                <span className={`trust ${confClass(s.confidence)}`}>{I.shield}{s.confidence}</span>
-                <span className="verified">{I.check}verified {daysAgo(s.last_verified_at)}</span>
-                {open === true && <span className="opennow"><span className="blink" />Open now</span>}
-              </div>
-
-              {s.fine_print && (
-                <div className="fineprint">{I.info}<span>{s.fine_print}</span></div>
+          <div className="wrap">
+            <div className="count"><span className="live-dot" /><span><b>{shown.length}</b> {sub === "now" ? "open right now" : "happy hours"} near you</span></div>
+            <div className="list">
+              {shown.length === 0 && (
+                <div className="empty"><b>Nothing matches yet</b>Try a different filter or search. <a onClick={() => { setSub("all"); setQ(""); }}>Reset</a></div>
               )}
-            </article>
-            );
-          })}
-        </div>
-
-        <div className="addwrap">
-          <button className="addbtn" onClick={addPhoto} disabled={busy}>
-            {I.camera}{busy ? "Reading photo..." : "Add a special from a photo"}
-          </button>
-        </div>
-        {toast && <div className="toast">{toast}</div>}
-      </div>
+              {shown.map(({ s, open }, i) => {
+                const timing = s.days + sep + s.start_time + (s.end_time && s.end_time !== s.start_time ? "–" + s.end_time : "");
+                return (
+                  <article key={i} className={`card ${s._fresh ? "fresh" : ""}`}>
+                    <div className="thumb" style={{ background: gradOf(s.venue_id) }}>
+                      <span className="ini">{initials(s.venue)}</span>
+                      <span className="catic">{ICON.glass}</span>
+                    </div>
+                    <div className="cbody">
+                      <div className="c-top">
+                        <div><div className="c-name">{s.venue}</div><div className="c-type">{s.type}</div></div>
+                        <div className="walk"><span className="min">{ICON.walk}{s.walk_min} min</span><span className="hood">{s.neighborhood}</span></div>
+                      </div>
+                      <p className="c-summary">{s.summary}</p>
+                      <div className="tags">
+                        {s.food && <span className="t food">Food</span>}
+                        {s.drink && <span className="t drink">Drink</span>}
+                        {s.freebie && <span className="t free">Freebie</span>}
+                        <span className="t">{timing}</span>
+                      </div>
+                      <div className="c-foot">
+                        <span className={`trust ${confClass(s.confidence)}`}>{ICON.shield}{s.confidence}</span>
+                        <span className="verified">{ICON.check}verified {daysAgo(s.last_verified_at)}</span>
+                        {open === true && <span className="opennow"><span className="blink" />Open now</span>}
+                      </div>
+                      {s.fine_print && <div className="fineprint">{ICON.info}<span>{s.fine_print}</span></div>}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+            <div className="addwrap">
+              <button className="addbtn" onClick={addPhoto} disabled={busy}>{ICON.camera}{busy ? "Reading photo..." : "Add a special from a photo"}</button>
+            </div>
+            {toast && <div className="toast">{toast}</div>}
+          </div>
+        </>
+      )}
     </>
   );
 }
