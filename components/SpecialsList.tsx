@@ -95,18 +95,26 @@ export default function SpecialsList({ initial }: { initial: Special[] }) {
   const [cat, setCat] = useState("happy_hour");
   const [sub, setSub] = useState<Sub>("all");
   const [q, setQ] = useState("");
+  const [sortBy, setSortBy] = useState<"relevance" | "time">("relevance");
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState("");
 
   const activeCat = CATS.find((c) => c.key === cat)!;
   const withOpen = useMemo(() => items.map((s) => ({ s, open: isOpenNow(s) })), [items]);
   const openCount = withOpen.filter((x) => x.open === true).length;
-  const shown = useMemo(() => withOpen.filter(({ s, open }) => {
-    if (q) { const hay = (s.venue + " " + s.summary + " " + s.neighborhood + " " + s.type).toLowerCase(); if (!hay.includes(q.toLowerCase())) return false; }
-    if (sub === "all") return true;
-    if (sub === "now") return open === true;
-    return (s as any)[sub];
-  }), [withOpen, sub, q]);
+  const shown = useMemo(() => {
+    let rows = withOpen.filter(({ s, open }) => {
+      if (q) { const hay = (s.venue + " " + s.summary + " " + s.neighborhood + " " + s.type).toLowerCase(); if (!hay.includes(q.toLowerCase())) return false; }
+      if (sub === "all") return true;
+      if (sub === "now") return open === true;
+      return (s as any)[sub];
+    });
+    if (sortBy === "time") {
+      const k = (s: Special) => { const t = parseTime(s.start_time); return t === "always" ? 0 : (t === null ? 1e9 : t); };
+      rows = [...rows].sort((a, b) => k(a.s) - k(b.s));
+    }
+    return rows;
+  }, [withOpen, sub, q, sortBy]);
 
   async function addPhoto() {
     setBusy(true); setToast("");
@@ -172,7 +180,13 @@ export default function SpecialsList({ initial }: { initial: Special[] }) {
           </div>
 
           <div className="wrap">
+            <div className="countrow">
             <div className="count"><span className="live-dot" /><span><b>{shown.length}</b> {sub === "now" ? "open right now" : "happy hours"} near you</span></div>
+            <button className="sortbtn" onClick={() => setSortBy(sortBy === "time" ? "relevance" : "time")}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              {sortBy === "time" ? "By start time" : "Sort by time"}
+            </button>
+          </div>
             <div className="list">
               {shown.length === 0 && (
                 <div className="empty"><b>Nothing matches yet</b>Try a different filter or search. <a onClick={() => { setSub("all"); setQ(""); }}>Reset</a></div>
