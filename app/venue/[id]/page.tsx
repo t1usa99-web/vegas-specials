@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getVenue, getVenueSpecials } from "@/lib/venue";
+import { getVenue, getVenueSpecials, getNearby } from "@/lib/venue";
 import SaveButton from "@/components/SaveButton";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +20,7 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
   const specials = await getVenueSpecials(params.id);
   const photos: string[] = Array.isArray(v.photos) ? v.photos : [];
   const reviews: any[] = Array.isArray(v.reviews) ? v.reviews : [];
+  const nearby = await getNearby(v.lat, v.lng, v.id, 3);
   const dir = v.lat && v.lng ? `https://www.google.com/maps/dir/?api=1&destination=${v.lat},${v.lng}` : null;
 
   return (
@@ -102,6 +103,23 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
               </div>
             ))}
             <div className="vp-rev-attr">Reviews from Google</div>
+          </div>
+        )}
+
+        {nearby.length > 0 && (
+          <div className="vp-nearby">
+            <h2 className="vp-sec" style={{ padding: 0 }}>Nearby spots</h2>
+            <div className="vp-near-row">
+              {nearby.map((n) => (
+                <Link key={n.id} href={`/venue/${n.id}`} className="vp-near">
+                  {n.photo_ref ? <img src={`/api/photo?ref=${encodeURIComponent(n.photo_ref)}`} alt="" loading="lazy" /> : <span className="vp-near-blank" />}
+                  <div className="vp-near-b">
+                    <b>{n.name}</b>
+                    <span>{n.rating ? `★ ${n.rating} · ` : ""}{n.deal_count} deal{n.deal_count == 1 ? "" : "s"}{n.cheapest != null ? ` · from $${Math.round(n.cheapest)}` : ""}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
 

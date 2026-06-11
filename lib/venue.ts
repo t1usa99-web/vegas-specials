@@ -3,3 +3,18 @@ let pool: Pool | null = null;
 function gp() { if (!process.env.DATABASE_URL) return null; if (!pool) pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } }); return pool; }
 export async function getVenue(id: string): Promise<any> { const p = gp(); if (!p) return null; try { const { rows } = await p.query("SELECT * FROM venues WHERE id=$1", [id]); return rows[0] || null; } catch { return null; } }
 export async function getVenueSpecials(id: string): Promise<any[]> { const p = gp(); if (!p) return []; try { const { rows } = await p.query("SELECT * FROM specials WHERE venue_id=$1 AND status='live' ORDER BY confidence DESC, id", [id]); return rows; } catch { return []; } }
+
+export async function getNearby(lat: number, lng: number, excludeId: string, limit = 3): Promise<any[]> {
+  const p = gp(); if (!p || lat == null || lng == null) return [];
+  try {
+    const { rows } = await p.query(
+      `SELECT v.id, v.name, v.neighborhood, v.rating, v.photo_ref,
+              MIN(sp.price) FILTER (WHERE sp.price IS NOT NULL) AS cheapest, COUNT(sp.id) AS deal_count
+       FROM venues v JOIN specials sp ON sp.venue_id = v.id AND sp.status='live'
+       WHERE v.id <> $3 AND v.lat IS NOT NULL AND v.lng IS NOT NULL
+       GROUP BY v.id
+       ORDER BY ((v.lat-$1)*(v.lat-$1)+(v.lng-$2)*(v.lng-$2)) ASC
+       LIMIT $4`, [lat, lng, excludeId, limit]);
+    return rows;
+  } catch { return []; }
+}
