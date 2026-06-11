@@ -26,7 +26,7 @@ async function firecrawl(url) {
 const SYS = `You extract Las Vegas venue info + deals from scraped promo/menu text into strict JSON.
 Return ONLY a single JSON object: {"cuisine":string,"vibe_tags":[string],"specials":[...]}.
 "cuisine" = the venue's primary cuisine if it's a restaurant (e.g. "Sushi","Steakhouse","Mexican","Italian","French","Thai","American","Seafood","Japanese"), else "".
-"vibe_tags" = any that clearly apply, choose from: rooftop, patio, dive bar, upscale, speakeasy, lounge, sports bar, date night, hidden gem, view, dog-friendly, gaming, pool, live music, late night.
+"vibe_tags" = any that clearly apply, choose from: rooftop, patio, dive bar, upscale, speakeasy, lounge, sports bar, date night, hidden gem, view, dog-friendly, gaming, pool, live music, late night, lgbtq, cocktail bar, wine bar, beer bar, brewery, tiki bar, whiskey bar, tequila bar, piano bar, karaoke, irish pub, gastropub, hookah lounge, cigar lounge, country bar, comedy, 24-hour.
 "specials" = an array with ONE item per DISTINCT deal (never merge different times/types/outlets). Each item:
 {"category":"happy_hour|food|drink|gaming|pool|club|show|hotel","summary":string(<=110),"food":bool,"drink":bool,"freebie":bool,"days":string,"start_time":string,"end_time":string,"reverse_window":string,"price":number|null,"discount_type":"percent_off|dollar_off|fixed_price|bogo|two_for_one|free|comp|other","outlet":string,"items":[{"name":string,"price":number|null}],"valid_until":string,"fine_print":string}.
 "items" = the individual happy-hour menu items with their prices if listed (e.g. [{"name":"Wells","price":5},{"name":"Deviled eggs","price":5}]), else [].

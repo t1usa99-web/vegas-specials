@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLanding, landingResults, LANDINGS } from "@/lib/landing";
+import Faq from "@/components/Faq";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,15 @@ export default async function Landing({ params }: { params: { slug: string } }) 
   if (!def) notFound();
   const results = await landingResults(def);
   const related = LANDINGS.filter((l) => l.slug !== def.slug).slice(0, 6);
+
+  const topic = def.h1.replace(/ in Las Vegas.*$/, "").replace(/^Best /, "").trim();
+  const cheapest = results.reduce((m: number | null, r: any) => (r.cheapest != null && (m == null || r.cheapest < m) ? r.cheapest : m), null as number | null);
+  const faqs = [
+    { q: "What time is happy hour in Las Vegas?", a: "Most Las Vegas happy hours run 3-7pm Monday through Friday, though a growing number run daily, including weekends. Every listing on this page shows the exact days and times, plus when it was last verified." },
+    ...(results.length ? [{ q: `How many ${topic.toLowerCase()} does VegasSpecials track?`, a: `We currently list ${results.length} verified ${topic.toLowerCase()} in Las Vegas, updated automatically as our crawler and local contributors confirm new deals.` }] : []),
+    ...(cheapest != null ? [{ q: "What is the cheapest deal on this page?", a: `The lowest verified price here is $${Math.round(cheapest)}. Prices change fast, so each card shows when the deal was last confirmed.` }] : []),
+    { q: "Are these Las Vegas deals verified?", a: "Yes. Every special carries a confidence score and a last-verified date. Deals are sourced from venue pages, our crawler and local contributors, then re-checked regularly so you never walk to a special that is already gone." },
+  ];
 
   const jsonld = {
     "@context": "https://schema.org", "@type": "ItemList", name: def.title,
@@ -58,6 +68,8 @@ export default async function Landing({ params }: { params: { slug: string } }) 
             </Link>
           ))}
         </div>
+
+        <Faq items={faqs} />
 
         <div className="land-related">
           <h2>More Las Vegas deal guides</h2>
