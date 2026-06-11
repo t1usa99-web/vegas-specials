@@ -1,6 +1,8 @@
 "use client";
 import { useMemo, useState } from "react";
 import type { Special } from "@/lib/seedData";
+import Link from "next/link";
+import SaveButton from "./SaveButton";
 
 type Sub = "all" | "now" | "food" | "drink" | "freebie";
 
@@ -194,7 +196,7 @@ export default function SpecialsList({ initial }: { initial: Special[] }) {
               {shown.map(({ s, open }, i) => {
                 const timing = s.days + sep + s.start_time + (s.end_time && s.end_time !== s.start_time ? "–" + s.end_time : "");
                 return (
-                  <article key={i} className={`card ${s._fresh ? "fresh" : ""}`}>
+                  <Link key={i} href={`/venue/${s.venue_id}`} className={`card ${s._fresh ? "fresh" : ""}`}>
                     <div className="thumb" style={{ background: gradOf(s.venue_id) }}>
                       <span className="ini">{initials(s.venue)}</span>
                       <span className="catic">{ICON.glass}</span>
@@ -210,15 +212,17 @@ export default function SpecialsList({ initial }: { initial: Special[] }) {
                         {s.drink && <span className="t drink">Drink</span>}
                         {s.freebie && <span className="t free">Freebie</span>}
                         <span className="t">{timing}</span>
+                        {(s as any).reverse_window && <span className="t" style={{ background: "#f3eaff", color: "#7a3bb0" }}>Late: {(s as any).reverse_window}</span>}
                       </div>
                       <div className="c-foot">
                         <span className={`trust ${confClass(s.confidence)}`}>{ICON.shield}{s.confidence}</span>
                         <span className="verified">{ICON.check}verified {daysAgo(s.last_verified_at)}</span>
                         {open === true && <span className="opennow"><span className="blink" />Open now</span>}
+                        <span style={{ marginLeft: open === true ? "8px" : "auto" }}><SaveButton id={s.venue_id} name={s.venue} compact /></span>
                       </div>
                       {s.fine_print && <div className="fineprint">{ICON.info}<span>{s.fine_print}</span></div>}
                     </div>
-                  </article>
+                  </Link>
                 );
               })}
             </div>

@@ -56,10 +56,10 @@ export default async function Home() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 4h11l3 3v13a0 0 0 01 0 0H5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
             Blog
           </Link>
-          <button className="tab">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 4h12a1 1 0 011 1v15l-7-4-7 4V5a1 1 0 011-1z"/></svg>
+          <Link href="/saved" className="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0112 5a5.5 5.5 0 019.5 7c-2.5 4.5-9.5 9-9.5 9z"/></svg>
             Saved
-          </button>
+          </Link>
         </div>
       </nav>
     </>
