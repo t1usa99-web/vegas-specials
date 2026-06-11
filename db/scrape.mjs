@@ -40,7 +40,7 @@ async function parse(md) {
 }
 
 async function main() {
-  const { rows: targets } = await pool.query("SELECT * FROM scrape_targets WHERE active");
+  const { rows: targets } = await pool.query("SELECT * FROM scrape_targets WHERE active ORDER BY last_scraped_at ASC NULLS FIRST");
   let changed = 0, unchanged = 0, failed = 0, inserted = 0, pending = 0;
   for (const t of targets) {
     try {
