@@ -23,11 +23,11 @@ export function verifyLabel(s: Verifiable): { text: string; cls: "ok" | "web" } 
   const vc = s.verified_count ?? 0;
   if (vc > 0) {
     const when = rel(s.last_verified_at);
-    return { text: `Confirmed by ${vc} visitor${vc > 1 ? "s" : ""}${when ? ` · ${when}` : ""}`, cls: "ok" };
+    return { text: `Confirmed by ${vc} ${vc > 1 ? "people" : "person"}${when ? ` · ${when}` : ""}`, cls: "ok" };
   }
   if (HUMAN.test(s.source || "")) {
     const when = rel(s.last_verified_at || s.last_seen_at);
-    return { text: `Submitted by a visitor${when ? ` · ${when}` : ""}`, cls: "web" };
+    return { text: `Submitted by someone${when ? ` · ${when}` : ""}`, cls: "web" };
   }
   // Default: read straight from the venue's website / promo page.
   const when = rel(s.last_seen_at || s.last_verified_at);
