@@ -24,7 +24,8 @@ async function firecrawl(url) {
 }
 
 const SYS = `You extract Las Vegas venue deals from scraped promo-page text into strict JSON.
-Return ONLY a JSON array. Each item: {"category":"happy_hour|food|drink|gaming|hotel","summary":string (<=140 chars),"food":bool,"drink":bool,"freebie":bool,"days":string,"start_time":string,"end_time":string,"fine_print":string}.
+Return ONLY a JSON array. Each item: {"category":"happy_hour|food|drink|gaming|hotel","summary":string (<=140 chars),"food":bool,"drink":bool,"freebie":bool,"days":string,"start_time":string,"end_time":string,"reverse_window":string,"price":number|null,"discount_type":"percent_off|dollar_off|fixed_price|bogo|two_for_one|free|comp|other","outlet":string,"fine_print":string}.
+"price" = lowest representative dollar amount as a number (5 for "$5 wells"), or null for %/BOGO/varies. "outlet" = the specific bar/restaurant inside the venue if named (e.g. "The Front Yard"), else "". "reverse_window" = a second/late-night window if mentioned (e.g. "10pm-1am"), else "". Mark a special all-day ONLY if the DEAL itself says so, not because the venue is open 24/7.
 Only include real, specific deals (prices, times, free items, comps). Skip generic marketing. If none, return [].`;
 
 async function parse(md) {
@@ -50,8 +51,8 @@ async function processOne(t) {
       await pool.query("DELETE FROM specials WHERE venue_id=$1 AND source='firecrawl'", [t.venue_id]);
       let ins=0;
       for (const s of specials) {
-        await pool.query(`INSERT INTO specials (venue_id,category,summary,food,drink,freebie,days,start_time,end_time,fine_print,source,confidence,status,last_verified_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'firecrawl',66,'live',now())`,
-          [t.venue_id, s.category||'happy_hour', (s.summary||'').slice(0,140), !!s.food, !!s.drink, !!s.freebie, s.days||'', s.start_time||'', s.end_time||'', s.fine_print||'']);
+        await pool.query(`INSERT INTO specials (venue_id,category,summary,food,drink,freebie,days,start_time,end_time,reverse_window,price,discount_type,outlet,source_url,fine_print,source,confidence,status,last_verified_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'firecrawl',66,'live',now())`,
+          [t.venue_id, s.category||'happy_hour', (s.summary||'').slice(0,140), !!s.food, !!s.drink, !!s.freebie, s.days||'', s.start_time||'', s.end_time||'', s.reverse_window||'', (typeof s.price==='number'?s.price:null), s.discount_type||'other', s.outlet||'', t.url, s.fine_print||'']);
         ins++;
       }
       await pool.query("UPDATE scrape_targets SET last_hash=$2, last_scraped_at=now(), last_status='parsed' WHERE id=$1", [t.id, h]);
