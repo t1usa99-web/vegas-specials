@@ -302,3 +302,7 @@ a.vp-outlet b{text-decoration:underline}
 .faq-q::after{content:"+";position:absolute;right:2px;top:11px;font-size:19px;font-weight:600;color:var(--muted);transition:.2s}
 .faq-item[open] .faq-q::after{transform:rotate(45deg)}
 .faq-a{font-size:14px;line-height:1.55;color:#3d3744;padding:0 0 13px}
+
+/* ---------- hero open-now CTA ---------- */
+.hero-cta{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:var(--green);color:#fff;font-weight:700;font-size:14px;padding:10px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(15,138,95,.32)}
+.hero-cta .blink{width:8px;height:8px;border-radius:50%;background:#fff;animation:blink 1.4s infinite}

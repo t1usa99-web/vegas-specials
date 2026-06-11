@@ -12,6 +12,14 @@ export default function BestHub() {
       <div className="wrap">
         <div className="land-head"><h1>Las Vegas deal guides</h1><p className="land-intro">Hand-picked categories, each updated automatically as new verified deals come in.</p></div>
         <div className="list">
+          <Link href="/open-now" className="card" style={{ display: "block", borderColor: "var(--green)" }}>
+            <div className="c-name" style={{ fontSize: 16 }}>🟢 Happy hours open right now</div>
+            <div className="c-type" style={{ marginTop: 4 }}>Live list of deals you can walk into this minute, checked against current Las Vegas time.</div>
+          </Link>
+          <Link href="/resort" className="card" style={{ display: "block" }}>
+            <div className="c-name" style={{ fontSize: 16 }}>Happy hours by resort</div>
+            <div className="c-type" style={{ marginTop: 4 }}>Every property's deals in one place — ARIA, Bellagio, Caesars, MGM Resorts, Station Casinos and more.</div>
+          </Link>
           {LANDINGS.map((l) => (
             <Link key={l.slug} href={`/best/${l.slug}`} className="card" style={{ display: "block" }}>
               <div className="c-name" style={{ fontSize: 16 }}>{l.h1}</div>

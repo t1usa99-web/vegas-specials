@@ -27,6 +27,7 @@ export default async function Home() {
       <div className="hero">
         <h1>What&apos;s <span className="hl">live right now</span> near you</h1>
         <p className="sub">Real Vegas deals, verified by locals &mdash; with prices, the fine print, and when each was last confirmed.</p>
+        <Link href="/open-now" className="hero-cta"><span className="blink" />See what&apos;s open right now</Link>
       </div>
 
       {!live && <div className="banner">Preview mode &mdash; showing sample data while the live database warms up.</div>}
@@ -39,7 +40,7 @@ export default async function Home() {
 
       <footer className="foot">
         <p><b>VegasSpecials</b> is the freshest source for Las Vegas deals. Every listing shows a confidence score and when it was last verified, so you never walk to a special that is already gone.</p>
-        <p style={{ marginTop: 8 }}>Browse our <Link href="/best" style={{ color: "var(--accent)", fontWeight: 600 }}>deal guides</Link> (best happy hours, cheap drinks, eats under $10), read the <Link href="/blog" style={{ color: "var(--accent)", fontWeight: 600 }}>blog</Link>, or confirm prices with the venue &mdash; they change fast.</p>
+        <p style={{ marginTop: 8 }}>Browse our <Link href="/best" style={{ color: "var(--accent)", fontWeight: 600 }}>deal guides</Link> (best happy hours, cheap drinks, eats under $10), browse <Link href="/resort" style={{ color: "var(--accent)", fontWeight: 600 }}>deals by resort</Link>, read the <Link href="/blog" style={{ color: "var(--accent)", fontWeight: 600 }}>blog</Link>, or confirm prices with the venue &mdash; they change fast.</p>
       </footer>
 
       <nav className="tabbar">
