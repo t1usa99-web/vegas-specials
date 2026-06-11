@@ -24,9 +24,13 @@ async function firecrawl(url) {
 }
 
 const SYS = `You extract Las Vegas venue deals from scraped promo-page text into strict JSON.
-Return ONLY a JSON array. Each item: {"category":"happy_hour|food|drink|gaming|hotel","summary":string (<=140 chars),"food":bool,"drink":bool,"freebie":bool,"days":string,"start_time":string,"end_time":string,"reverse_window":string,"price":number|null,"discount_type":"percent_off|dollar_off|fixed_price|bogo|two_for_one|free|comp|other","outlet":string,"fine_print":string}.
-"price" = lowest representative dollar amount as a number (5 for "$5 wells"), or null for %/BOGO/varies. "outlet" = the specific bar/restaurant inside the venue if named (e.g. "The Front Yard"), else "". "reverse_window" = a second/late-night window if mentioned (e.g. "10pm-1am"), else "". Mark a special all-day ONLY if the DEAL itself says so, not because the venue is open 24/7.
-Only include real, specific deals (prices, times, free items, comps). Skip generic marketing. If none, return [].`;
+Return ONLY a JSON array, with ONE item per DISTINCT deal. NEVER combine deals that have different times, days, prices, types, or outlets into one item - split them (e.g. a 3-6pm happy hour, a daily free-beer-for-veterans offer, and a 24/7 steak deal are THREE separate items).
+Each item: {"category":"happy_hour|food|drink|gaming|hotel","summary":string (<=110 chars describing ONLY this one deal),"food":bool,"drink":bool,"freebie":bool,"days":string,"start_time":string,"end_time":string,"reverse_window":string,"price":number|null,"discount_type":"percent_off|dollar_off|fixed_price|bogo|two_for_one|free|comp|other","outlet":string,"fine_print":string}.
+"outlet" = the specific restaurant/bar/room inside the venue this deal is in, if named (e.g. "The Front Yard", "Village Pub & Cafe"), else "".
+"price" = the dollar amount as a number (5 for "$5 wells", 16.99 for "$16.99 prime rib"), or null for %/BOGO/varies.
+"start_time"/"end_time" = this deal's window. For an always-available item (signature $16.99 prime rib, $9.99 steak, $1 oysters), set days="Daily", start_time="All day", end_time="All day". Mark all-day ONLY when the DEAL itself is, not because the venue is open 24/7.
+"reverse_window" = a second/late window for THIS deal if mentioned, else "".
+Include standout everyday value items as their own item even if always available - users want to know. Skip generic marketing. If no real deals, return [].`;
 
 async function parse(md) {
   if (!ANTHROPIC) return null;

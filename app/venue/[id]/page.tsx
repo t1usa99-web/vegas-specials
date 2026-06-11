@@ -18,6 +18,8 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
   const v = await getVenue(params.id);
   if (!v) notFound();
   const specials = await getVenueSpecials(params.id);
+  const photos: string[] = Array.isArray(v.photos) ? v.photos : [];
+  const reviews: any[] = Array.isArray(v.reviews) ? v.reviews : [];
   const dir = v.lat && v.lng ? `https://www.google.com/maps/dir/?api=1&destination=${v.lat},${v.lng}` : null;
 
   return (
@@ -50,6 +52,13 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
           </div>
         </div>
 
+        {photos.length > 1 && (
+          <div className="vp-gallery">
+            {photos.slice(1, 6).map((ref, i) => (
+              <img key={i} src={`/api/photo?ref=${encodeURIComponent(ref)}`} alt={`${v.name} photo ${i + 2}`} loading="lazy" />
+            ))}
+          </div>
+        )}
         <h2 className="vp-sec">Specials &amp; happy hours</h2>
         <div className="vp-list">
           {specials.length === 0 && <div className="empty">No verified specials right now. <Link href="/">Browse other venues</Link></div>}
@@ -66,6 +75,7 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
                   <span className="vp-win"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{window}</span>
                   {s.reverse_window && <span className="vp-win late">Late night · {s.reverse_window}</span>}
                 </div>
+                {s.outlet && <div className="vp-outlet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s-7-5.5-7-11a7 7 0 1114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>at <b>{s.outlet}</b></div>}
                 <div className="vp-sp-foot">
                   {s.food && <span className="t food">Food</span>}
                   {s.drink && <span className="t drink">Drink</span>}
@@ -78,6 +88,22 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
             );
           })}
         </div>
+
+        {reviews.length > 0 && (
+          <div className="vp-reviews">
+            <h2 className="vp-sec" style={{ padding: "0 0 0 0" }}>Recent reviews</h2>
+            {reviews.map((r, i) => (
+              <div className="vp-rev" key={i}>
+                <div className="vp-rev-h">
+                  {r.avatar ? <img className="vp-rev-av" src={r.avatar} alt="" loading="lazy" /> : <span className="vp-rev-av vp-rev-blank">{(r.author || "G")[0]}</span>}
+                  <div><b>{r.author}</b><span className="vp-rev-meta">{r.rating ? "★".repeat(Math.round(r.rating)) : ""} · {r.time}</span></div>
+                </div>
+                <p className="vp-rev-text">{r.text}</p>
+              </div>
+            ))}
+            <div className="vp-rev-attr">Reviews from Google</div>
+          </div>
+        )}
 
         <div className="vp-soon">
           <b>Coming soon for this venue</b>
