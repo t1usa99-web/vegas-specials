@@ -1,5 +1,6 @@
 import pg from "pg";
 import crypto from "node:crypto";
+import { ensureSchema, BACKFILL } from "./migrate.mjs";
 
 const FC = process.env.FIRECRAWL_API_KEY;
 const ANTHROPIC = process.env.ANTHROPIC_API_KEY;
@@ -61,7 +62,7 @@ async function processOne(t) {
       await pool.query("DELETE FROM specials WHERE venue_id=$1 AND source='firecrawl'", [t.venue_id]);
       let ins=0;
       for (const s of specials) {
-        await pool.query(`INSERT INTO specials (venue_id,category,summary,food,drink,freebie,days,start_time,end_time,reverse_window,price,discount_type,outlet,source_url,fine_print,items,valid_until,source,confidence,status,last_verified_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,'firecrawl',66,'live',now())`,
+        await pool.query(`INSERT INTO specials (venue_id,category,summary,food,drink,freebie,days,start_time,end_time,reverse_window,price,discount_type,outlet,source_url,fine_print,items,valid_until,source,confidence,status,last_seen_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,'firecrawl',66,'live',now())`,
           [t.venue_id, s.category||'happy_hour', (s.summary||'').slice(0,140), !!s.food, !!s.drink, !!s.freebie, s.days||'', s.start_time||'', s.end_time||'', s.reverse_window||'', (typeof s.price==='number'?s.price:null), s.discount_type||'other', s.outlet||'', t.url, s.fine_print||'', JSON.stringify(s.items||[]), (s.valid_until||null)]);
         ins++;
       }
@@ -76,6 +77,8 @@ async function processOne(t) {
 }
 
 async function main() {
+  await ensureSchema(pool);
+  for (const sql of BACKFILL) await pool.query(sql);
   const { rows: targets } = await pool.query("SELECT * FROM scrape_targets WHERE active ORDER BY last_scraped_at ASC NULLS FIRST");
   const CONC = 6;
   const tot = {};

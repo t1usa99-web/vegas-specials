@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getVenue, getVenueSpecials, getNearby, getChildren, getAggregateSpecials } from "@/lib/venue";
 import SaveButton from "@/components/SaveButton";
+import { verifyLabel } from "@/lib/trust";
 
 export const dynamic = "force-dynamic";
 
@@ -89,7 +90,7 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
                   {s.drink && <span className="t drink">Drink</span>}
                   {s.freebie && <span className="t free">Freebie</span>}
                   {s.outlet && <span className="t">{s.outlet}</span>}
-                  <span className="vp-verified">✓ verified {fdate(s.last_verified_at)}{s.source_url ? <> · <a href={s.source_url} target="_blank" rel="noopener">source</a></> : null}</span>
+                  <span className="vp-verified">✓ {verifyLabel(s).text}{s.source_url ? <> · <a href={s.source_url} target="_blank" rel="noopener">source</a></> : null}</span>
                 </div>
                 {s.fine_print && <div className="fineprint" style={{ marginTop: 8 }}><span>{s.fine_print}</span></div>}
               </div>

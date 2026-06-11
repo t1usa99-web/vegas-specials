@@ -306,3 +306,8 @@ a.vp-outlet b{text-decoration:underline}
 /* ---------- hero open-now CTA ---------- */
 .hero-cta{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:var(--green);color:#fff;font-weight:700;font-size:14px;padding:10px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(15,138,95,.32)}
 .hero-cta .blink{width:8px;height:8px;border-radius:50%;background:#fff;animation:blink 1.4s infinite}
+
+/* ---------- tiered verification label ---------- */
+.verified.ok{color:var(--green)}
+.verified.ok svg{color:var(--green)}
+.verified.web{color:var(--muted)}

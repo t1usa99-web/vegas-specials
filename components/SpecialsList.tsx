@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import type { Special } from "@/lib/seedData";
+import { verifyLabel } from "@/lib/trust";
 import Link from "next/link";
 import SaveButton from "./SaveButton";
 
@@ -216,7 +217,7 @@ export default function SpecialsList({ initial }: { initial: Special[] }) {
                       </div>
                       <div className="c-foot">
                         <span className={`trust ${confClass(s.confidence)}`}>{ICON.shield}{s.confidence}</span>
-                        <span className="verified">{ICON.check}verified {daysAgo(s.last_verified_at)}</span>
+                        {(() => { const vl = verifyLabel(s); return <span className={"verified " + vl.cls}>{ICON.check}{vl.text}</span>; })()}
                         {open === true && <span className="opennow"><span className="blink" />Open now</span>}
                         <span style={{ marginLeft: open === true ? "8px" : "auto" }}><SaveButton id={s.venue_id} name={s.venue} compact /></span>
                       </div>

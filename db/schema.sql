@@ -1,14 +1,26 @@
--- Vegas Specials core schema (Postgres)
+-- Vegas Specials core schema (Postgres) — complete source of truth.
+-- For an existing DB, db/migrate.mjs applies the same columns idempotently.
 CREATE TABLE IF NOT EXISTS venues (
   id            TEXT PRIMARY KEY,
   name          TEXT NOT NULL,
   type          TEXT,
   neighborhood  TEXT,
   resort        TEXT,
+  parent_id     TEXT,                 -- self-reference: outlet -> mega-property
   address       TEXT,
   lat           DOUBLE PRECISION,
   lng           DOUBLE PRECISION,
   walk_min      INTEGER,
+  cuisine       TEXT,
+  vibe_tags     JSONB,
+  rating        DOUBLE PRECISION,
+  price_level   INTEGER,
+  photo_ref     TEXT,
+  photos        JSONB,
+  reviews       JSONB,
+  hours         JSONB,
+  phone         TEXT,
+  website       TEXT,
   google_place_id TEXT,
   created_at    TIMESTAMPTZ DEFAULT now()
 );
@@ -24,11 +36,22 @@ CREATE TABLE IF NOT EXISTS specials (
   days          TEXT,
   start_time    TEXT,
   end_time      TEXT,
+  reverse_window TEXT,
+  price         NUMERIC,
+  discount_type TEXT,
+  outlet        TEXT,
+  items         JSONB,
+  valid_until   DATE,
   fine_print    TEXT,
+  source_url    TEXT,
   source        TEXT,
   confidence    INTEGER DEFAULT 50,
   status        TEXT DEFAULT 'unverified',
-  last_verified_at TIMESTAMPTZ DEFAULT now()
+  -- trust / freshness:
+  verified_count INTEGER DEFAULT 0,    -- human confirmations ("still here")
+  flagged_count  INTEGER DEFAULT 0,    -- human flags ("gone")
+  last_seen_at   TIMESTAMPTZ,          -- machine freshness (last scrape that saw it)
+  last_verified_at TIMESTAMPTZ         -- HUMAN verification only (null until confirmed)
 );
 
 CREATE TABLE IF NOT EXISTS submissions (
@@ -41,5 +64,7 @@ CREATE TABLE IF NOT EXISTS submissions (
   created_at    TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_specials_venue ON specials(venue_id);
-CREATE INDEX IF NOT EXISTS idx_specials_status ON specials(status);
+CREATE INDEX IF NOT EXISTS idx_specials_venue    ON specials(venue_id);
+CREATE INDEX IF NOT EXISTS idx_specials_status   ON specials(status);
+CREATE INDEX IF NOT EXISTS idx_specials_category ON specials(category);
+CREATE INDEX IF NOT EXISTS idx_venues_parent     ON venues(parent_id);
