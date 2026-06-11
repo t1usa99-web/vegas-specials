@@ -79,13 +79,18 @@ async function processOne(t) {
 async function main() {
   await ensureSchema(pool);
   for (const sql of BACKFILL) await pool.query(sql);
-  const { rows: targets } = await pool.query("SELECT * FROM scrape_targets WHERE active ORDER BY last_scraped_at ASC NULLS FIRST");
-  const CONC = 6;
+  const LIMIT = parseInt(process.env.SCRAPE_LIMIT || "0", 10);
+  const { rows: targets } = await pool.query(
+    "SELECT * FROM scrape_targets WHERE active ORDER BY last_scraped_at ASC NULLS FIRST" + (LIMIT > 0 ? ` LIMIT ${LIMIT}` : ""));
+  const CONC = parseInt(process.env.SCRAPE_CONC || "6", 10);
+  const DELAY = parseInt(process.env.SCRAPE_DELAY_MS || "0", 10);
+  console.log(`Scraping ${targets.length} target(s) · conc=${CONC} · delay=${DELAY}ms`);
   const tot = {};
   for (let i = 0; i < targets.length; i += CONC) {
     const batch = targets.slice(i, i + CONC);
     const res = await Promise.all(batch.map(processOne));
     for (const r of res) for (const k in r) tot[k] = (tot[k]||0) + r[k];
+    if (DELAY && i + CONC < targets.length) await new Promise((r) => setTimeout(r, DELAY));
   }
   console.log("\nDONE", JSON.stringify(tot));
   await pool.end();
