@@ -30,7 +30,7 @@ async function main() {
   let venues = 0, targets = 0, calls = 0;
   for (const [q, hood, walk] of QUERIES) {
     let token = null;
-    for (let page = 0; page < 2; page++) {           // up to 40 results/query
+    const PAGES=Number(process.env.DISCOVER_PAGES||2); for (let page = 0; page < PAGES; page++) {           // up to 40 results/query
       const data = await search(q, token); calls++;
       for (const p of data.places || []) {
         const id = "g_" + p.id;
