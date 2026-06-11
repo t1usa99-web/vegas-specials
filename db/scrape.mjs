@@ -23,25 +23,26 @@ async function firecrawl(url) {
   return j?.data?.markdown || "";
 }
 
-const SYS = `You extract Las Vegas venue deals from scraped promo-page text into strict JSON.
-Return ONLY a JSON array, with ONE item per DISTINCT deal. NEVER combine deals that have different times, days, prices, types, or outlets into one item - split them (e.g. a 3-6pm happy hour, a daily free-beer-for-veterans offer, and a 24/7 steak deal are THREE separate items).
-Each item: {"category":"happy_hour|food|drink|gaming|hotel","summary":string (<=110 chars describing ONLY this one deal),"food":bool,"drink":bool,"freebie":bool,"days":string,"start_time":string,"end_time":string,"reverse_window":string,"price":number|null,"discount_type":"percent_off|dollar_off|fixed_price|bogo|two_for_one|free|comp|other","outlet":string,"fine_print":string}.
-"outlet" = the specific restaurant/bar/room inside the venue this deal is in, if named (e.g. "The Front Yard", "Village Pub & Cafe"), else "".
-"price" = the dollar amount as a number (5 for "$5 wells", 16.99 for "$16.99 prime rib"), or null for %/BOGO/varies.
-"start_time"/"end_time" = this deal's window. For an always-available item (signature $16.99 prime rib, $9.99 steak, $1 oysters), set days="Daily", start_time="All day", end_time="All day". Mark all-day ONLY when the DEAL itself is, not because the venue is open 24/7.
-"reverse_window" = a second/late window for THIS deal if mentioned, else "".
-Include standout everyday value items as their own item even if always available - users want to know. Skip generic marketing. If no real deals, return [].`;
+const SYS = `You extract Las Vegas venue info + deals from scraped promo/menu text into strict JSON.
+Return ONLY a single JSON object: {"cuisine":string,"vibe_tags":[string],"specials":[...]}.
+"cuisine" = the venue's primary cuisine if it's a restaurant (e.g. "Sushi","Steakhouse","Mexican","Italian","French","Thai","American","Seafood","Japanese"), else "".
+"vibe_tags" = any that clearly apply, choose from: rooftop, patio, dive bar, upscale, speakeasy, lounge, sports bar, date night, hidden gem, view, dog-friendly, gaming, pool, live music, late night.
+"specials" = an array with ONE item per DISTINCT deal (never merge different times/types/outlets). Each item:
+{"category":"happy_hour|food|drink|gaming|pool|club|show|hotel","summary":string(<=110),"food":bool,"drink":bool,"freebie":bool,"days":string,"start_time":string,"end_time":string,"reverse_window":string,"price":number|null,"discount_type":"percent_off|dollar_off|fixed_price|bogo|two_for_one|free|comp|other","outlet":string,"items":[{"name":string,"price":number|null}],"valid_until":string,"fine_print":string}.
+"items" = the individual happy-hour menu items with their prices if listed (e.g. [{"name":"Wells","price":5},{"name":"Deviled eggs","price":5}]), else [].
+"valid_until" = an ISO date (YYYY-MM-DD) if the deal is seasonal or time-limited (e.g. a pool deal ending in the fall), else "".
+For an always-available item set days="Daily", start_time="All day", end_time="All day". Mark all-day ONLY when the DEAL is, not because the venue is open 24/7. Pool / dayclub deals use category "pool". Skip generic marketing. If no real deals, still return cuisine/vibe with "specials":[].`;
 
 async function parse(md) {
   if (!ANTHROPIC) return null;
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST", headers: { "x-api-key": ANTHROPIC, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 1500, system: SYS,
+    body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 2000, system: SYS,
       messages: [{ role: "user", content: "Extract deals from this page:\n\n" + md.slice(0, 12000) }] }),
   });
   const j = await r.json();
-  const txt = j?.content?.[0]?.text || "[]";
-  try { return JSON.parse(txt.slice(txt.indexOf("["), txt.lastIndexOf("]") + 1)); } catch { return []; }
+  const txt = j?.content?.[0]?.text || "{}";
+  try { return JSON.parse(txt.slice(txt.indexOf("{"), txt.lastIndexOf("}") + 1)); } catch { return {}; }
 }
 
 async function processOne(t) {
@@ -51,12 +52,17 @@ async function processOne(t) {
     const h = sha(md);
     if (h === t.last_hash) { await pool.query("UPDATE scrape_targets SET last_scraped_at=now(), last_status='unchanged' WHERE id=$1", [t.id]); return {unchanged:1}; }
     if (ANTHROPIC) {
-      const specials = (await parse(md)) || [];
+      const parsed = (await parse(md)) || {};
+      const specials = parsed.specials || [];
+      if (parsed.cuisine || (parsed.vibe_tags && parsed.vibe_tags.length)) {
+        await pool.query("UPDATE venues SET cuisine=COALESCE(NULLIF($2,''),cuisine), vibe_tags=COALESCE($3,vibe_tags) WHERE id=$1",
+          [t.venue_id, parsed.cuisine||'', (parsed.vibe_tags && parsed.vibe_tags.length)?JSON.stringify(parsed.vibe_tags):null]);
+      }
       await pool.query("DELETE FROM specials WHERE venue_id=$1 AND source='firecrawl'", [t.venue_id]);
       let ins=0;
       for (const s of specials) {
-        await pool.query(`INSERT INTO specials (venue_id,category,summary,food,drink,freebie,days,start_time,end_time,reverse_window,price,discount_type,outlet,source_url,fine_print,source,confidence,status,last_verified_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'firecrawl',66,'live',now())`,
-          [t.venue_id, s.category||'happy_hour', (s.summary||'').slice(0,140), !!s.food, !!s.drink, !!s.freebie, s.days||'', s.start_time||'', s.end_time||'', s.reverse_window||'', (typeof s.price==='number'?s.price:null), s.discount_type||'other', s.outlet||'', t.url, s.fine_print||'']);
+        await pool.query(`INSERT INTO specials (venue_id,category,summary,food,drink,freebie,days,start_time,end_time,reverse_window,price,discount_type,outlet,source_url,fine_print,items,valid_until,source,confidence,status,last_verified_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,'firecrawl',66,'live',now())`,
+          [t.venue_id, s.category||'happy_hour', (s.summary||'').slice(0,140), !!s.food, !!s.drink, !!s.freebie, s.days||'', s.start_time||'', s.end_time||'', s.reverse_window||'', (typeof s.price==='number'?s.price:null), s.discount_type||'other', s.outlet||'', t.url, s.fine_print||'', JSON.stringify(s.items||[]), (s.valid_until||null)]);
         ins++;
       }
       await pool.query("UPDATE scrape_targets SET last_hash=$2, last_scraped_at=now(), last_status='parsed' WHERE id=$1", [t.id, h]);
