@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getVenue, getVenueSpecials, getNearby } from "@/lib/venue";
+import { getVenue, getVenueSpecials, getNearby, getChildren, getAggregateSpecials } from "@/lib/venue";
 import SaveButton from "@/components/SaveButton";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +21,10 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
   const photos: string[] = Array.isArray(v.photos) ? v.photos : [];
   const reviews: any[] = Array.isArray(v.reviews) ? v.reviews : [];
   const nearby = await getNearby(v.lat, v.lng, v.id, 3);
+  const parent = v.parent_id ? await getVenue(v.parent_id) : null;
+  const children = await getChildren(v.id);
+  const isParent = children.length > 0;
+  const displaySpecials = isParent ? await getAggregateSpecials(v.id) : specials;
   const dir = v.lat && v.lng ? `https://www.google.com/maps/dir/?api=1&destination=${v.lat},${v.lng}` : null;
 
   return (
@@ -39,6 +43,7 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
 
         <div className="vp-head">
           <h1>{v.name}</h1>
+          {parent && <Link href={`/venue/${parent.id}`} className="vp-parent">&uarr; Inside {parent.name}</Link>}
           <div className="vp-meta">
             {v.rating && <span className="vp-rate">★ {v.rating}</span>}
             {v.price_level != null && <span>{dollars(v.price_level)}</span>}
@@ -62,8 +67,8 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
         )}
         <h2 className="vp-sec">Specials &amp; happy hours</h2>
         <div className="vp-list">
-          {specials.length === 0 && <div className="empty">No verified specials right now. <Link href="/">Browse other venues</Link></div>}
-          {specials.map((s, i) => {
+          {displaySpecials.length === 0 && <div className="empty">No verified specials right now. <Link href="/">Browse other venues</Link></div>}
+          {displaySpecials.map((s: any, i: number) => {
             const hasMain = s.start_time && s.start_time !== "TBD";
             const window = hasMain ? `${s.days || "Daily"} · ${s.start_time}${s.end_time && s.end_time !== s.start_time ? "–" + s.end_time : ""}` : "Times vary — confirm with venue";
             return (
@@ -76,7 +81,9 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
                   <span className="vp-win"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{window}</span>
                   {s.reverse_window && <span className="vp-win late">Late night · {s.reverse_window}</span>}
                 </div>
-                {s.outlet && <div className="vp-outlet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s-7-5.5-7-11a7 7 0 1114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>at <b>{s.outlet}</b></div>}
+                {s._venue_id && s._venue_id !== v.id ? (
+                  <Link href={`/venue/${s._venue_id}`} className="vp-outlet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s-7-5.5-7-11a7 7 0 1114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>at <b>{s._venue_name}</b></Link>
+                ) : (s.outlet && <div className="vp-outlet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s-7-5.5-7-11a7 7 0 1114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>at <b>{s.outlet}</b></div>)}
                 <div className="vp-sp-foot">
                   {s.food && <span className="t food">Food</span>}
                   {s.drink && <span className="t drink">Drink</span>}
@@ -89,6 +96,20 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
             );
           })}
         </div>
+
+        {children.length > 0 && (
+          <div className="vp-children">
+            <h2 className="vp-sec" style={{ padding: 0 }}>Restaurants &amp; bars inside {v.name}</h2>
+            <div className="vp-near-row">
+              {children.map((c) => (
+                <Link key={c.id} href={`/venue/${c.id}`} className="vp-near">
+                  {c.photo_ref ? <img src={`/api/photo?ref=${encodeURIComponent(c.photo_ref)}`} alt="" loading="lazy" /> : <span className="vp-near-blank" />}
+                  <div className="vp-near-b"><b>{c.name}</b><span>{c.rating ? `★ ${c.rating} · ` : ""}{c.type}{Number(c.deal_count) > 0 ? ` · ${c.deal_count} deal${c.deal_count == 1 ? "" : "s"}` : ""}</span></div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {reviews.length > 0 && (
           <div className="vp-reviews">

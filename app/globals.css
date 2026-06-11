@@ -285,3 +285,10 @@ a{color:inherit;text-decoration:none}
 .land-related h2{font-size:16px;font-weight:700;margin-bottom:12px}
 .land-rel-row{display:flex;flex-direction:column;gap:8px}
 .land-rel{font-size:14px;font-weight:600;color:var(--accent-ink);background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+
+/* parent/child */
+.vp-parent{display:inline-block;margin-top:8px;font-size:12.5px;font-weight:700;color:var(--accent-ink);background:var(--accent-bg);padding:4px 11px;border-radius:999px}
+.vp-children{max-width:780px;margin:22px auto 0;padding:0 16px}
+.vp-children .vp-near-row{margin-top:11px}
+a.vp-outlet{text-decoration:none}
+a.vp-outlet b{text-decoration:underline}

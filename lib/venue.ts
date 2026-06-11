@@ -18,3 +18,27 @@ export async function getNearby(lat: number, lng: number, excludeId: string, lim
     return rows;
   } catch { return []; }
 }
+
+export async function getChildren(id: string): Promise<any[]> {
+  const p = gp(); if (!p) return [];
+  try {
+    const { rows } = await p.query(
+      `SELECT v.id, v.name, v.type, v.rating, v.photo_ref,
+              COUNT(s.id) FILTER (WHERE s.status='live') AS deal_count
+       FROM venues v LEFT JOIN specials s ON s.venue_id = v.id
+       WHERE v.parent_id = $1
+       GROUP BY v.id ORDER BY deal_count DESC, v.rating DESC NULLS LAST`, [id]);
+    return rows;
+  } catch { return []; }
+}
+export async function getAggregateSpecials(id: string): Promise<any[]> {
+  const p = gp(); if (!p) return [];
+  try {
+    const { rows } = await p.query(
+      `SELECT s.*, v.name AS _venue_name, v.id AS _venue_id
+       FROM specials s JOIN venues v ON v.id = s.venue_id
+       WHERE (s.venue_id = $1 OR v.parent_id = $1) AND s.status='live'
+       ORDER BY s.confidence DESC, s.id`, [id]);
+    return rows;
+  } catch { return []; }
+}
