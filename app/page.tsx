@@ -26,7 +26,7 @@ export default async function Home() {
 
       <div className="hero">
         <h1>What&apos;s <span className="hl">live right now</span> near you</h1>
-        <p className="sub">Real Vegas deals, verified by locals &mdash; with prices, the fine print, and when each was last confirmed.</p>
+        <p className="sub">Real Vegas deals straight from venue menus, confirmed by visitors &mdash; with prices, the fine print, and when each was last checked.</p>
         <Link href="/open-now" className="hero-cta"><span className="blink" />See what&apos;s open right now</Link>
       </div>
 
