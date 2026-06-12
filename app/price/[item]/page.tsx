@@ -2,13 +2,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTracked, getPriceComparison, TRACKED } from "@/lib/price";
 import PriceTable from "@/components/PriceTable";
+import { robotsMeta, THIN } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: { item: string } }) {
   const t = getTracked(params.item);
   if (!t) return {};
-  return { title: `${t.h1} (Live, Sortable) | VegasSpecials`, description: t.intro };
+  const rows = await getPriceComparison(t);
+  return { title: `${t.h1} (Live, Sortable) | VegasSpecials`, description: t.intro, ...robotsMeta(rows.length < THIN.price) };
 }
 
 const monthYear = () => new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });

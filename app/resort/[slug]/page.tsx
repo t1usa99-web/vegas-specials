@@ -2,13 +2,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getResort, resortResults, RESORTS } from "@/lib/resorts";
 import Faq from "@/components/Faq";
+import { robotsMeta, THIN } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const def = getResort(params.slug);
   if (!def) return {};
-  return { title: `${def.title} | VegasSpecials`, description: def.intro };
+  const results = await resortResults(def);
+  const deals = results.reduce((n: number, r: any) => n + Number(r.deal_count || 0), 0);
+  return { title: `${def.title} | VegasSpecials`, description: def.intro, ...robotsMeta(deals === 0) };
 }
 
 const monthYear = () => new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });

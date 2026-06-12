@@ -2,13 +2,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLanding, landingResults, LANDINGS } from "@/lib/landing";
 import Faq from "@/components/Faq";
+import { robotsMeta, THIN } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const def = getLanding(params.slug);
   if (!def) return {};
-  return { title: `${def.title} | VegasSpecials`, description: def.intro };
+  const results = await landingResults(def);
+  return { title: `${def.title} | VegasSpecials`, description: def.intro, ...robotsMeta(results.length < THIN.landing) };
 }
 
 const monthYear = () => new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });

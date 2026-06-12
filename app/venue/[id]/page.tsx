@@ -3,13 +3,15 @@ import { notFound } from "next/navigation";
 import { getVenue, getVenueSpecials, getNearby, getChildren, getAggregateSpecials } from "@/lib/venue";
 import SaveButton from "@/components/SaveButton";
 import { verifyLabel } from "@/lib/trust";
+import { robotsMeta, THIN } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const v = await getVenue(params.id);
   if (!v) return {};
-  return { title: `${v.name} — happy hour & specials | VegasSpecials`, description: `Current happy hours, drink specials and deals at ${v.name}${v.neighborhood ? " (" + v.neighborhood + ")" : ""}, Las Vegas. Verified prices and times.` };
+  const specials = await getAggregateSpecials(params.id);
+  return { title: `${v.name} — happy hour & specials | VegasSpecials`, description: `Current happy hours, drink specials and deals at ${v.name}${v.neighborhood ? " (" + v.neighborhood + ")" : ""}, Las Vegas. Verified prices and times.`, ...robotsMeta(specials.length === 0) };
 }
 
 const fdate = (iso: string) => { const d = Math.round((Date.now() - new Date(iso).getTime()) / 86400000); return d <= 0 ? "today" : d === 1 ? "yesterday" : d + "d ago"; };
