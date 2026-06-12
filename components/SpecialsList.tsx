@@ -4,6 +4,7 @@ import type { Special } from "@/lib/seedData";
 import { verifyLabel } from "@/lib/trust";
 import Link from "next/link";
 import SaveButton from "./SaveButton";
+import ConfirmFlag from "./ConfirmFlag";
 
 type Sub = "all" | "now" | "food" | "drink" | "freebie";
 
@@ -225,6 +226,7 @@ export default function SpecialsList({ initial }: { initial: Special[] }) {
                         {open === true && <span className="opennow"><span className="blink" />Open now</span>}
                         <span style={{ marginLeft: open === true ? "8px" : "auto" }}><SaveButton id={s.venue_id} name={s.venue} compact /></span>
                       </div>
+                      <div style={{ display: "flex", marginTop: 8 }}><ConfirmFlag id={s.id} verified={(s as any).verified_count || 0} /></div>
                       {s.fine_print && <div className="fineprint">{ICON.info}<span>{s.fine_print}</span></div>}
                     </div>
                   </Link>

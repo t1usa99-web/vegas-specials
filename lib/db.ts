@@ -27,7 +27,7 @@ export async function getSpecials(): Promise<Special[]> {
     );
     if (!rows.length) return SEED;
     return rows.map((r: any) => ({
-      venue_id: r.venue_id, venue: r.venue, type: r.type, neighborhood: r.neighborhood,
+      id: r.id, venue_id: r.venue_id, venue: r.venue, type: r.type, neighborhood: r.neighborhood,
       walk_min: r.walk_min ?? 0, category: r.category, summary: r.summary,
       food: r.food, drink: r.drink, freebie: r.freebie,
       days: r.days, start_time: r.start_time, end_time: r.end_time,

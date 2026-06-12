@@ -1,6 +1,7 @@
 // Seed data — the 10 real venues researched for the prototype.
 // Used to populate Postgres (db/seed.mjs) AND as a fallback when no DB is attached.
 export type Special = {
+  id?: number;
   venue_id: string; venue: string; type: string; neighborhood: string;
   walk_min: number; category: string; summary: string;
   food: boolean; drink: boolean; freebie: boolean;
