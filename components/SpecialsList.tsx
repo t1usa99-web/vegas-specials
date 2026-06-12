@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Special } from "@/lib/seedData";
 import { verifyLabel } from "@/lib/trust";
 import Link from "next/link";
@@ -96,6 +97,7 @@ export default function SpecialsList({ initial }: { initial: Special[] }) {
   const [cat, setCat] = useState("happy_hour");
   const [sub, setSub] = useState<Sub>("all");
   const [q, setQ] = useState("");
+  const router = useRouter();
   const [sortBy, setSortBy] = useState<"relevance" | "time">("relevance");
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState("");
@@ -144,7 +146,7 @@ export default function SpecialsList({ initial }: { initial: Special[] }) {
     <>
       <div className="search">
         <div className="box">{ICON.search}
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search venues, deals, neighborhoods..." />
+          <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && q.trim().length >= 2) router.push(`/search?q=${encodeURIComponent(q.trim())}`); }} placeholder="Search venues, deals, neighborhoods… (Enter for all)" />
         </div>
       </div>
 
