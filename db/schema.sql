@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS venues (
   hours         JSONB,
   phone         TEXT,
   website       TEXT,
+  description   TEXT,
   google_place_id TEXT,
   created_at    TIMESTAMPTZ DEFAULT now()
 );

@@ -53,6 +53,7 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
             {v.type && <span>{v.type}</span>}
             {v.neighborhood && <span><i>·</i> {v.neighborhood}</span>}
           </div>
+          {v.description && <p className="vp-desc">{v.description}</p>}
           <div className="vp-actions">
             <SaveButton id={v.id} name={v.name} />
             {dir && <a className="vp-act" href={dir} target="_blank" rel="noopener">Directions ↗</a>}

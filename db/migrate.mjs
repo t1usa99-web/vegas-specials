@@ -17,6 +17,7 @@ export const MIGRATIONS = [
   `ALTER TABLE venues ADD COLUMN IF NOT EXISTS hours       JSONB`,
   `ALTER TABLE venues ADD COLUMN IF NOT EXISTS phone       TEXT`,
   `ALTER TABLE venues ADD COLUMN IF NOT EXISTS website     TEXT`,
+  `ALTER TABLE venues ADD COLUMN IF NOT EXISTS description TEXT`,
   // ---- specials: structured deal columns ----
   `ALTER TABLE specials ADD COLUMN IF NOT EXISTS reverse_window TEXT`,
   `ALTER TABLE specials ADD COLUMN IF NOT EXISTS price          NUMERIC`,

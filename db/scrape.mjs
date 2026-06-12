@@ -27,8 +27,9 @@ async function firecrawl(url) {
 const TODAY = new Date().toISOString().slice(0,10);
 const FORCE_REPARSE = process.env.FORCE_REPARSE === "1";
 const SYS = `You extract Las Vegas venue info + deals from scraped promo/menu text into strict JSON.
-Return ONLY a single JSON object: {"cuisine":string,"vibe_tags":[string],"specials":[...]}.
+Return ONLY a single JSON object: {"cuisine":string,"vibe_tags":[string],"description":string,"specials":[...]}.
 "cuisine" = the venue's primary cuisine if it's a restaurant (e.g. "Sushi","Steakhouse","Mexican","Italian","French","Thai","American","Seafood","Japanese"), else "".
+"description" = a neutral, factual 1-2 sentence summary of what this venue is — type, setting/vibe, and signature offering. <=240 chars. No marketing fluff, no exclamation points. e.g. "A retro tiki bar off the Strip known for frozen cocktails and a Polynesian-themed patio." Leave "" if the page does not say.
 "vibe_tags" = any that clearly apply, choose from: rooftop, patio, dive bar, upscale, speakeasy, lounge, sports bar, date night, hidden gem, view, dog-friendly, gaming, pool, live music, late night, lgbtq, cocktail bar, wine bar, beer bar, brewery, tiki bar, whiskey bar, tequila bar, piano bar, karaoke, irish pub, gastropub, hookah lounge, cigar lounge, country bar, comedy, 24-hour.
 "specials" = an array with ONE item per DISTINCT deal (never merge different times/types/outlets). Each item:
 {"category":"happy_hour|food|drink|gaming|pool|club|show|hotel","summary":string(<=110),"food":bool,"drink":bool,"freebie":bool,"days":string,"start_time":string,"end_time":string,"reverse_window":string,"price":number|null,"discount_type":"percent_off|dollar_off|fixed_price|bogo|two_for_one|free|comp|other","outlet":string,"items":[{"name":string,"price":number|null}],"valid_until":string,"fine_print":string}.
@@ -57,9 +58,9 @@ async function processOne(t) {
     if (ANTHROPIC) {
       const parsed = (await parse(md)) || {};
       const specials = parsed.specials || [];
-      if (parsed.cuisine || (parsed.vibe_tags && parsed.vibe_tags.length)) {
-        await pool.query("UPDATE venues SET cuisine=COALESCE(NULLIF($2,''),cuisine), vibe_tags=COALESCE($3,vibe_tags) WHERE id=$1",
-          [t.venue_id, parsed.cuisine||'', (parsed.vibe_tags && parsed.vibe_tags.length)?JSON.stringify(parsed.vibe_tags):null]);
+      if (parsed.cuisine || parsed.description || (parsed.vibe_tags && parsed.vibe_tags.length)) {
+        await pool.query("UPDATE venues SET cuisine=COALESCE(NULLIF($2,''),cuisine), vibe_tags=COALESCE($3,vibe_tags), description=COALESCE(NULLIF($4,''),description) WHERE id=$1",
+          [t.venue_id, parsed.cuisine||'', (parsed.vibe_tags && parsed.vibe_tags.length)?JSON.stringify(parsed.vibe_tags):null, (parsed.description||'').slice(0,300)]);
       }
       await pool.query("DELETE FROM specials WHERE venue_id=$1 AND source='firecrawl'", [t.venue_id]);
       let ins=0;

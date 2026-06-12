@@ -311,3 +311,6 @@ a.vp-outlet b{text-decoration:underline}
 .verified.ok{color:var(--green)}
 .verified.ok svg{color:var(--green)}
 .verified.web{color:var(--muted)}
+
+/* venue description */
+.vp-desc{margin:10px 0 2px;font-size:14.5px;line-height:1.55;color:#39333f;max-width:60ch}
