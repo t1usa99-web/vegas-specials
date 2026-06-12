@@ -24,6 +24,8 @@ async function firecrawl(url) {
   return j?.data?.markdown || "";
 }
 
+const TODAY = new Date().toISOString().slice(0,10);
+const FORCE_REPARSE = process.env.FORCE_REPARSE === "1";
 const SYS = `You extract Las Vegas venue info + deals from scraped promo/menu text into strict JSON.
 Return ONLY a single JSON object: {"cuisine":string,"vibe_tags":[string],"specials":[...]}.
 "cuisine" = the venue's primary cuisine if it's a restaurant (e.g. "Sushi","Steakhouse","Mexican","Italian","French","Thai","American","Seafood","Japanese"), else "".
@@ -31,7 +33,7 @@ Return ONLY a single JSON object: {"cuisine":string,"vibe_tags":[string],"specia
 "specials" = an array with ONE item per DISTINCT deal (never merge different times/types/outlets). Each item:
 {"category":"happy_hour|food|drink|gaming|pool|club|show|hotel","summary":string(<=110),"food":bool,"drink":bool,"freebie":bool,"days":string,"start_time":string,"end_time":string,"reverse_window":string,"price":number|null,"discount_type":"percent_off|dollar_off|fixed_price|bogo|two_for_one|free|comp|other","outlet":string,"items":[{"name":string,"price":number|null}],"valid_until":string,"fine_print":string}.
 "items" = the individual happy-hour menu items with their prices if listed (e.g. [{"name":"Wells","price":5},{"name":"Deviled eggs","price":5}]), else [].
-"valid_until" = an ISO date (YYYY-MM-DD) if the deal is seasonal or time-limited (e.g. a pool deal ending in the fall), else "".
+"valid_until" = the ISO date (YYYY-MM-DD) the deal EXPIRES (last day it applies), else "". Today is ${TODAY}. ALWAYS set it for any deal tied to a date, holiday, event, season, or limited run. Resolve named holidays/events to their real calendar date in the year the deal refers to (default the current year): "Cinco de Mayo"->YYYY-05-05, "4th of July"/"Independence Day"->YYYY-07-04, "Veterans Day"->YYYY-11-11, "Memorial Day"/"Labor Day"->that holiday's date that year, "summer"/"through Labor Day"->early September, "June 5-7"->YYYY-06-07, a pool deal ending in fall->end of September. For ongoing/recurring deals (Taco Tuesday, daily happy hour, reverse happy hour, weekly nights) leave "" — they do not expire.
 For an always-available item set days="Daily", start_time="All day", end_time="All day". Mark all-day ONLY when the DEAL is, not because the venue is open 24/7. Pool / dayclub deals use category "pool". Skip generic marketing. If no real deals, still return cuisine/vibe with "specials":[].`;
 
 async function parse(md) {
@@ -51,7 +53,7 @@ async function processOne(t) {
     const md = clean(await firecrawl(t.url));
     if (!md || md.length < 50) { await pool.query("UPDATE scrape_targets SET last_status='empty', last_scraped_at=now() WHERE id=$1", [t.id]); return {empty:1}; }
     const h = sha(md);
-    if (h === t.last_hash) { await pool.query("UPDATE scrape_targets SET last_scraped_at=now(), last_status='unchanged' WHERE id=$1", [t.id]); return {unchanged:1}; }
+    if (h === t.last_hash && !FORCE_REPARSE) { await pool.query("UPDATE scrape_targets SET last_scraped_at=now(), last_status='unchanged' WHERE id=$1", [t.id]); return {unchanged:1}; }
     if (ANTHROPIC) {
       const parsed = (await parse(md)) || {};
       const specials = parsed.specials || [];

@@ -60,7 +60,7 @@ export async function openNowVenues(): Promise<any[]> {
       SELECT s.id, s.summary, s.price, s.days, s.start_time, s.end_time, s.outlet, s.category, s.confidence,
              v.id AS vid, v.name, v.neighborhood, v.rating, v.photo_ref
       FROM specials s JOIN venues v ON v.id = s.venue_id
-      WHERE s.status='live' AND s.category IN ('happy_hour','drink','food','gaming')`);
+      WHERE s.status='live' AND (s.valid_until IS NULL OR s.valid_until >= CURRENT_DATE) AND s.category IN ('happy_hour','drink','food','gaming')`);
     rows = r.rows;
   } catch { return []; }
   const now = vegasNow();

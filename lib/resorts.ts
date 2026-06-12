@@ -58,7 +58,7 @@ export async function resortResults(def: Resort): Promise<any[]> {
         MIN(sp.price) FILTER (WHERE sp.price IS NOT NULL) AS cheapest, COUNT(sp.id) AS deal_count,
         json_agg(json_build_object('summary', sp.summary, 'price', sp.price, 'days', sp.days, 'start', sp.start_time, 'end', sp.end_time, 'outlet', sp.outlet, 'category', sp.category) ORDER BY sp.confidence DESC) AS specials
       FROM specials sp JOIN venues v ON v.id = sp.venue_id
-      WHERE sp.status='live' AND (${def.match})
+      WHERE sp.status='live' AND (sp.valid_until IS NULL OR sp.valid_until >= CURRENT_DATE) AND (${def.match})
       GROUP BY v.id
       ORDER BY (v.rating IS NULL), v.rating DESC NULLS LAST
       LIMIT 80`);
