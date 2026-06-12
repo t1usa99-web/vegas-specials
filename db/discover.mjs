@@ -5,14 +5,51 @@ const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl: { re
 
 // neighborhood label -> rough default walking minutes (until real geo distance is added)
 const QUERIES = [
+  // happy hour by neighborhood
   ["happy hour bars on the Las Vegas Strip", "Strip", 8],
   ["happy hour restaurants Downtown Las Vegas", "Downtown", 20],
-  ["bars Arts District Las Vegas", "Arts District", 14],
-  ["bars and izakaya Chinatown Spring Mountain Las Vegas", "Chinatown", 18],
+  ["happy hour Arts District Las Vegas", "Arts District", 16],
+  ["happy hour Chinatown Spring Mountain Las Vegas", "Chinatown", 18],
   ["happy hour Henderson Nevada", "Henderson", 30],
   ["happy hour Summerlin Las Vegas", "Summerlin", 28],
+  ["happy hour Spring Valley Las Vegas", "Spring Valley", 20],
+  ["happy hour Southwest Las Vegas", "Southwest", 25],
+  // cuisines
+  ["mexican restaurants Las Vegas", "Off-Strip", 18],
+  ["italian restaurants Las Vegas", "Off-Strip", 18],
+  ["sushi restaurants Las Vegas", "Off-Strip", 18],
+  ["steakhouses Las Vegas", "Strip", 10],
+  ["thai restaurants Chinatown Las Vegas", "Chinatown", 18],
+  ["seafood restaurants Las Vegas", "Off-Strip", 18],
+  ["taco shops Las Vegas", "Off-Strip", 18],
+  ["pizza restaurants Las Vegas", "Off-Strip", 18],
+  ["bbq restaurants Las Vegas", "Off-Strip", 20],
+  ["ramen and izakaya Chinatown Las Vegas", "Chinatown", 18],
+  ["french restaurants Las Vegas", "Strip", 10],
+  // bar types
   ["sports bars Las Vegas", "Off-Strip", 15],
+  ["dive bars Las Vegas", "Off-Strip", 16],
+  ["cocktail bars Las Vegas", "Strip", 10],
+  ["wine bars Las Vegas", "Off-Strip", 16],
   ["breweries and taprooms Las Vegas", "Off-Strip", 15],
+  ["tiki bars Las Vegas", "Strip", 12],
+  ["karaoke bars Las Vegas", "Off-Strip", 16],
+  ["gay bars Las Vegas Fruit Loop Paradise Road", "Off-Strip (East)", 14],
+  ["country bars and honky tonks Las Vegas", "Off-Strip", 18],
+  ["hookah lounges Las Vegas", "Strip", 12],
+  ["cigar lounges Las Vegas", "Strip", 12],
+  ["speakeasy bars Las Vegas", "Strip", 12],
+  ["irish pubs Las Vegas", "Strip", 12],
+  ["rooftop bars Las Vegas", "Strip", 8],
+  ["gastropubs Las Vegas", "Off-Strip", 16],
+  // nightlife, pools, gaming
+  ["nightclubs Las Vegas", "Strip", 8],
+  ["pool clubs and dayclubs Las Vegas", "Strip", 8],
+  ["video poker bars Las Vegas locals", "Off-Strip", 16],
+  ["lounges Las Vegas Strip", "Strip", 8],
+  // locals casinos
+  ["Station Casinos Las Vegas", "Off-Strip", 25],
+  ["locals casino happy hour Las Vegas", "Off-Strip", 25],
 ];
 const MASK = "places.id,places.displayName,places.formattedAddress,places.websiteUri,places.location,places.primaryTypeDisplayName,nextPageToken";
 
