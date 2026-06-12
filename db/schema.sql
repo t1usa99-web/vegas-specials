@@ -68,3 +68,25 @@ CREATE INDEX IF NOT EXISTS idx_specials_venue    ON specials(venue_id);
 CREATE INDEX IF NOT EXISTS idx_specials_status   ON specials(status);
 CREATE INDEX IF NOT EXISTS idx_specials_category ON specials(category);
 CREATE INDEX IF NOT EXISTS idx_venues_parent     ON venues(parent_id);
+
+CREATE TABLE IF NOT EXISTS events (
+  id            TEXT PRIMARY KEY,
+  source        TEXT,                 -- ticketmaster | seatgeek
+  name          TEXT,
+  category      TEXT,                 -- concert | show | sports | comedy | other
+  venue_name    TEXT,
+  venue_id      TEXT,                 -- nullable link to venues
+  starts_at     TIMESTAMPTZ,
+  url           TEXT,
+  image_url     TEXT,
+  price_min     NUMERIC,
+  price_max     NUMERIC,
+  lat           DOUBLE PRECISION,
+  lng           DOUBLE PRECISION,
+  neighborhood  TEXT,
+  status        TEXT DEFAULT 'live',
+  last_seen_at  TIMESTAMPTZ,
+  created_at    TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_events_starts ON events(starts_at);
+CREATE INDEX IF NOT EXISTS idx_events_category ON events(category);

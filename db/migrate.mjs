@@ -29,6 +29,15 @@ export const MIGRATIONS = [
   `ALTER TABLE specials ADD COLUMN IF NOT EXISTS verified_count INTEGER DEFAULT 0`,
   `ALTER TABLE specials ADD COLUMN IF NOT EXISTS flagged_count  INTEGER DEFAULT 0`,
   `ALTER TABLE specials ADD COLUMN IF NOT EXISTS last_seen_at   TIMESTAMPTZ`,
+  // ---- events (Ticketmaster / SeatGeek ingestion) ----
+  `CREATE TABLE IF NOT EXISTS events (
+     id TEXT PRIMARY KEY, source TEXT, name TEXT, category TEXT,
+     venue_name TEXT, venue_id TEXT, starts_at TIMESTAMPTZ,
+     url TEXT, image_url TEXT, price_min NUMERIC, price_max NUMERIC,
+     lat DOUBLE PRECISION, lng DOUBLE PRECISION, neighborhood TEXT,
+     status TEXT DEFAULT 'live', last_seen_at TIMESTAMPTZ, created_at TIMESTAMPTZ DEFAULT now())`,
+  `CREATE INDEX IF NOT EXISTS idx_events_starts ON events(starts_at)`,
+  `CREATE INDEX IF NOT EXISTS idx_events_category ON events(category)`,
   // ---- indexes for the new landing / resort / open-now queries ----
   `CREATE INDEX IF NOT EXISTS idx_venues_parent   ON venues(parent_id)`,
   `CREATE INDEX IF NOT EXISTS idx_specials_category ON specials(category)`,
