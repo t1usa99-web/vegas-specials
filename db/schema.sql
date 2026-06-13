@@ -91,3 +91,16 @@ CREATE TABLE IF NOT EXISTS events (
 );
 CREATE INDEX IF NOT EXISTS idx_events_starts ON events(starts_at);
 CREATE INDEX IF NOT EXISTS idx_events_category ON events(category);
+
+CREATE TABLE IF NOT EXISTS menu_items (
+  id           SERIAL PRIMARY KEY,
+  venue_id     TEXT,
+  name         TEXT,
+  price        NUMERIC,
+  category     TEXT,   -- beer | wine | cocktail | spirit | food | appetizer | entree | steak | seafood | dessert | other
+  section      TEXT,
+  source_url   TEXT,
+  last_seen_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_menu_items_venue ON menu_items(venue_id);
+CREATE INDEX IF NOT EXISTS idx_menu_items_cat ON menu_items(category);

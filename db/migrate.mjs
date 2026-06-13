@@ -30,6 +30,13 @@ export const MIGRATIONS = [
   `ALTER TABLE specials ADD COLUMN IF NOT EXISTS verified_count INTEGER DEFAULT 0`,
   `ALTER TABLE specials ADD COLUMN IF NOT EXISTS flagged_count  INTEGER DEFAULT 0`,
   `ALTER TABLE specials ADD COLUMN IF NOT EXISTS last_seen_at   TIMESTAMPTZ`,
+  // ---- menu items (full-menu price scraping) ----
+  `ALTER TABLE venues ADD COLUMN IF NOT EXISTS menu_scraped_at TIMESTAMPTZ`,
+  `CREATE TABLE IF NOT EXISTS menu_items (
+     id SERIAL PRIMARY KEY, venue_id TEXT, name TEXT, price NUMERIC,
+     category TEXT, section TEXT, source_url TEXT, last_seen_at TIMESTAMPTZ DEFAULT now())`,
+  `CREATE INDEX IF NOT EXISTS idx_menu_items_venue ON menu_items(venue_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_menu_items_cat ON menu_items(category)`,
   // ---- events (Ticketmaster / SeatGeek ingestion) ----
   `CREATE TABLE IF NOT EXISTS events (
      id TEXT PRIMARY KEY, source TEXT, name TEXT, category TEXT,

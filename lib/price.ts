@@ -19,6 +19,12 @@ export const TRACKED: TrackedItem[] = [
   { slug: "mimosa", label: "Mimosa", h1: "Cheapest Mimosas & Bottomless Mimosas in Las Vegas", intro: "Mimosa and bottomless-mimosa prices across Las Vegas.", keywords: ["mimosa"] },
   { slug: "martini", label: "Martini", h1: "Cheapest Martinis in Las Vegas", intro: "Verified martini prices across Las Vegas.", keywords: ["martini"] },
   { slug: "oysters", label: "Oysters", h1: "Cheapest Oysters in Las Vegas", intro: "Where to find dollar oysters and the cheapest oysters in Las Vegas.", keywords: ["oyster"] },
+  { slug: "steak", label: "Steak", h1: "Steak Prices in Las Vegas — Cheapest to Most Expensive", intro: "Every steak price we can find across Las Vegas — sort low to high, or high to low for the priciest cuts in town.", keywords: ["steak", "ribeye", "filet", "new york strip", "porterhouse", "sirloin", "wagyu"] },
+  { slug: "lobster", label: "Lobster", h1: "Lobster Prices in Las Vegas", intro: "Lobster and lobster tail prices across Las Vegas, sortable.", keywords: ["lobster"] },
+  { slug: "burger", label: "Burger", h1: "Burger Prices in Las Vegas", intro: "From cheap sliders to $100 burgers — every burger price in Las Vegas, sortable.", keywords: ["burger"] },
+  { slug: "wings", label: "Wings", h1: "Chicken Wing Prices in Las Vegas", intro: "Wing prices across Las Vegas bars and restaurants.", keywords: ["wing"] },
+  { slug: "dessert", label: "Dessert", h1: "Dessert Prices in Las Vegas", intro: "Dessert prices across Las Vegas — including the over-the-top ones.", keywords: ["dessert", "cake", "cheesecake", "creme brulee", "sundae", "gelato", "tiramisu"] },
+  { slug: "cocktail", label: "Cocktail", h1: "Cocktail Prices in Las Vegas", intro: "Cocktail prices across Las Vegas, cheapest first (or priciest).", keywords: ["cocktail", "old fashioned", "negroni", "manhattan", "espresso martini"] },
 ];
 
 export function getTracked(slug: string) { return TRACKED.find((t) => t.slug === slug) || null; }
@@ -44,8 +50,13 @@ export async function getPriceComparison(item: TrackedItem): Promise<PriceRow[]>
               sp.days, sp.start_time, sp.end_time, sp.last_seen_at
        FROM specials sp JOIN venues v ON v.id = sp.venue_id
        WHERE ${guard} AND sp.price IS NOT NULL AND lower(sp.summary) LIKE ANY($1)`, [pats]);
-    const [a, b] = await Promise.all([fromItems, fromSummary]);
-    const all = [...a.rows, ...b.rows].map((r: any) => ({ ...r, price: Number(r.price) })).filter((r) => r.price > 0 && r.price < 100);
+    const fromMenu = p.query(
+      `SELECT v.id venue_id, v.name venue, v.neighborhood, v.lat, v.lng, v.rating,
+              mi.price AS price, mi.name AS label, '' AS days, '' AS start_time, '' AS end_time, mi.last_seen_at
+       FROM menu_items mi JOIN venues v ON v.id = mi.venue_id
+       WHERE mi.price IS NOT NULL AND mi.price > 0 AND lower(mi.name) LIKE ANY($1)`, [pats]);
+    const [a, b, c] = await Promise.all([fromItems, fromSummary, fromMenu]);
+    const all = [...a.rows, ...b.rows, ...c.rows].map((r: any) => ({ ...r, price: Number(r.price) })).filter((r) => r.price > 0 && r.price < 100);
     // keep the lowest price per venue
     const byVenue = new Map<string, PriceRow>();
     for (const r of all) {
