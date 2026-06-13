@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Special } from "@/lib/seedData";
 import { verifyLabel } from "@/lib/trust";
+import { dealValue } from "@/lib/value";
 import Link from "next/link";
 import SaveButton from "./SaveButton";
 import ConfirmFlag from "./ConfirmFlag";
@@ -216,6 +217,7 @@ export default function SpecialsList({ initial }: { initial: Special[] }) {
                       </div>
                       <p className="c-summary">{s.summary}</p>
                       <div className="tags">
+                        <span className="t" style={{ background: "var(--accent-bg)", color: "var(--accent-ink)", fontWeight: 700 }}>{dealValue(s)}</span>
                         {s.food && <span className="t food">Food</span>}
                         {s.drink && <span className="t drink">Drink</span>}
                         {s.freebie && <span className="t free">Freebie</span>}

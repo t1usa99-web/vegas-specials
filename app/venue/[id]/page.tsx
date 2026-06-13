@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getVenue, getVenueSpecials, getNearby, getChildren, getAggregateSpecials } from "@/lib/venue";
 import SaveButton from "@/components/SaveButton";
 import { verifyLabel } from "@/lib/trust";
+import { dealValue } from "@/lib/value";
 import { robotsMeta, THIN } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -79,7 +80,7 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
               <div className="vp-sp" key={i}>
                 <div className="vp-sp-top">
                   <div className="vp-sp-sum">{s.summary}</div>
-                  {s.price != null && <span className="vp-price">${Number(s.price)}</span>}
+                  <span className="vp-price">{dealValue(s)}</span>
                 </div>
                 <div className="vp-windows">
                   <span className="vp-win"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{window}</span>

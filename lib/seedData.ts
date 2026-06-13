@@ -9,6 +9,7 @@ export type Special = {
   fine_print: string; source: string; confidence: number;
   status: string; last_verified_at: string;
   source_url?: string | null; verified_count?: number | null; last_seen_at?: string | null;
+  price?: number | null; discount_type?: string | null; items?: any;
 };
 
 const ago = (d: number) => new Date(Date.now() - d * 86400000).toISOString();

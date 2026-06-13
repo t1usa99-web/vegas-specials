@@ -34,6 +34,7 @@ export async function getSpecials(): Promise<Special[]> {
       fine_print: r.fine_print, source: r.source, confidence: r.confidence,
       status: r.status, last_verified_at: r.last_verified_at,
       source_url: r.source_url, verified_count: r.verified_count, last_seen_at: r.last_seen_at,
+      price: r.price, discount_type: r.discount_type, items: r.items,
     }));
   } catch (e) {
     console.error("DB query failed, using seed:", e);
