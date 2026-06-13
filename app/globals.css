@@ -314,3 +314,11 @@ a.vp-outlet b{text-decoration:underline}
 
 /* venue description */
 .vp-desc{margin:10px 0 2px;font-size:14.5px;line-height:1.55;color:#39333f;max-width:60ch}
+
+/* venue menu section */
+.vp-menu{display:flex;flex-direction:column;gap:18px;padding:0 16px 8px}
+.vp-menu-sec{}
+.vp-menu-h{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.vp-menu-row{display:flex;justify-content:space-between;gap:14px;align-items:baseline;padding:5px 0;font-size:14.5px}
+.vp-menu-name{color:#39333f}
+.vp-menu-price{font-weight:700;color:var(--accent-ink);flex:0 0 auto}

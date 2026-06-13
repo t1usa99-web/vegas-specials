@@ -42,3 +42,12 @@ export async function getAggregateSpecials(id: string): Promise<any[]> {
     return rows;
   } catch { return []; }
 }
+
+export async function getMenuItems(id: string): Promise<any[]> {
+  const p = gp(); if (!p) return [];
+  try {
+    const { rows } = await p.query(
+      "SELECT name, price, category, section FROM menu_items WHERE venue_id=$1 AND price IS NOT NULL ORDER BY section NULLS LAST, category, price DESC LIMIT 120", [id]);
+    return rows;
+  } catch { return []; }
+}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getVenue, getVenueSpecials, getNearby, getChildren, getAggregateSpecials } from "@/lib/venue";
+import { getVenue, getVenueSpecials, getNearby, getChildren, getAggregateSpecials, getMenuItems } from "@/lib/venue";
 import SaveButton from "@/components/SaveButton";
 import { verifyLabel } from "@/lib/trust";
 import { dealValue } from "@/lib/value";
@@ -29,6 +29,12 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
   const children = await getChildren(v.id);
   const isParent = children.length > 0;
   const displaySpecials = isParent ? await getAggregateSpecials(v.id) : specials;
+  const menu = await getMenuItems(v.id);
+  const menuGroups: Record<string, any[]> = {};
+  for (const m of menu) {
+    const k = (m.section && String(m.section).trim()) || (m.category ? String(m.category).charAt(0).toUpperCase() + String(m.category).slice(1) : "Menu");
+    (menuGroups[k] ||= []).push(m);
+  }
   const dir = v.lat && v.lng ? `https://www.google.com/maps/dir/?api=1&destination=${v.lat},${v.lng}` : null;
 
   return (
@@ -101,6 +107,22 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
             );
           })}
         </div>
+
+        {menu.length > 0 && (
+          <>
+            <h2 className="vp-sec">Menu &amp; prices</h2>
+            <div className="vp-menu">
+              {Object.entries(menuGroups).map(([sec, items]) => (
+                <div key={sec} className="vp-menu-sec">
+                  <div className="vp-menu-h">{sec}</div>
+                  {items.map((m: any, i: number) => (
+                    <div key={i} className="vp-menu-row"><span className="vp-menu-name">{m.name}</span><span className="vp-menu-price">${Number(m.price) % 1 === 0 ? Number(m.price) : Number(m.price).toFixed(2)}</span></div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         {children.length > 0 && (
           <div className="vp-children">
