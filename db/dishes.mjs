@@ -84,6 +84,7 @@ async function main() {
       if (dish) { knownMap.set(dish, label); mapped++; } // grow canon so later batches reuse it
     }
     console.log(`  batch ${i / BATCH + 1}: +${names.length} (canon size ${knownMap.size})`);
+    await pool.query(`UPDATE menu_items mi SET dish = dm.dish, dish_label = dm.dish_label FROM dish_map dm WHERE lower(trim(mi.name)) = dm.raw_name AND mi.dish IS NULL`);
   }
 
   // stamp menu_items from the map
