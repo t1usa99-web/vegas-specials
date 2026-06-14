@@ -171,10 +171,6 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
           </div>
         )}
 
-        <div className="vp-soon">
-          <b>Coming soon for this venue</b>
-          <p>Full menu &amp; prices (via the venue's POS), and photos submitted by visitors. Spotted a special we're missing? <Link href="/">Add it from a photo</Link>.</p>
-        </div>
       </div>
 
       <nav className="tabbar">

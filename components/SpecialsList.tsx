@@ -24,7 +24,6 @@ const CATS: { key: string; label: string; live: boolean; href?: string; icon: JS
   { key: "happy_hour", label: "Happy Hour", live: true, icon: ICON.glass },
   { key: "prices", label: "Prices", live: true, href: "/price", icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> },
   { key: "pools", label: "Pools", live: true, href: "/best/pool-and-dayclub-deals-las-vegas", icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg> },
-  { key: "shows", label: "Shows", live: true, href: "/events", icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9a2 2 0 012-2h14a2 2 0 012 2 2 2 0 000 4 2 2 0 00-2 2H5a2 2 0 01-2-2 2 2 0 000-4z"/><path d="M14 7v10"/></svg> },
   { key: "gaming", label: "Gaming", live: true, href: "/best/gaming-bar-happy-hours-las-vegas", icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.1" fill="currentColor"/><circle cx="15" cy="15" r="1.1" fill="currentColor"/><circle cx="15" cy="9" r="1.1" fill="currentColor"/><circle cx="9" cy="15" r="1.1" fill="currentColor"/></svg> },
 ];
 
