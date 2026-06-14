@@ -11,14 +11,18 @@ if (!FC || !ANTHROPIC) { console.error("FIRECRAWL_API_KEY + ANTHROPIC_API_KEY re
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 
 async function firecrawl(url, withLinks = false) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20000);
   try {
     const r = await fetch("https://api.firecrawl.dev/v1/scrape", {
       method: "POST", headers: { Authorization: "Bearer " + FC, "Content-Type": "application/json" },
-      body: JSON.stringify({ url, formats: withLinks ? ["markdown", "links"] : ["markdown"], onlyMainContent: !withLinks, timeout: 25000 }),
+      body: JSON.stringify({ url, formats: withLinks ? ["markdown", "links"] : ["markdown"], onlyMainContent: !withLinks, timeout: 14000 }),
+      signal: ctrl.signal,
     });
     const j = await r.json();
     return j.data || {};
   } catch { return {}; }
+  finally { clearTimeout(timer); }
 }
 
 function findMenuUrl(data, website) {
@@ -73,9 +77,12 @@ async function main() {
   const LIMIT = Number(process.env.MENU_LIMIT || 0);
   const FORCE = process.env.MENU_FORCE === "1";
   const { rows } = await pool.query(
-    `SELECT id, name, website FROM venues WHERE website IS NOT NULL AND website <> ''` +
-    (FORCE ? "" : " AND menu_scraped_at IS NULL") +
-    ` ORDER BY menu_scraped_at ASC NULLS FIRST` + (LIMIT > 0 ? ` LIMIT ${LIMIT}` : ""));
+    `SELECT v.id, v.name, COALESCE(NULLIF(v.website,''), st.url) AS website
+     FROM venues v
+     LEFT JOIN LATERAL (SELECT url FROM scrape_targets s WHERE s.venue_id = v.id AND s.active ORDER BY s.id LIMIT 1) st ON true
+     WHERE COALESCE(NULLIF(v.website,''), st.url) IS NOT NULL`
+    + (FORCE ? "" : " AND v.menu_scraped_at IS NULL")
+    + ` ORDER BY v.menu_scraped_at ASC NULLS FIRST` + (LIMIT > 0 ? ` LIMIT ${LIMIT}` : ""));
   const CONC = Number(process.env.MENU_CONC || 4);
   const DELAY = Number(process.env.MENU_DELAY_MS || 400);
   console.log(`Menu scrape: ${rows.length} venues with websites · conc=${CONC}`);

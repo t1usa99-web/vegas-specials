@@ -16,12 +16,17 @@ function clean(md) {
 const sha = (s) => crypto.createHash("sha256").update(s).digest("hex");
 
 async function firecrawl(url) {
-  const r = await fetch("https://api.firecrawl.dev/v1/scrape", {
-    method: "POST", headers: { Authorization: "Bearer " + FC, "Content-Type": "application/json" },
-    body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true }),
-  });
-  const j = await r.json();
-  return j?.data?.markdown || "";
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20000);
+  try {
+    const r = await fetch("https://api.firecrawl.dev/v1/scrape", {
+      method: "POST", headers: { Authorization: "Bearer " + FC, "Content-Type": "application/json" },
+      body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true, timeout: 14000 }),
+      signal: ctrl.signal,
+    });
+    const j = await r.json();
+    return j?.data?.markdown || "";
+  } finally { clearTimeout(timer); }
 }
 
 const TODAY = new Date().toISOString().slice(0,10);
