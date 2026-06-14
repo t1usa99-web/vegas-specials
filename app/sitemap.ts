@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { LANDINGS } from "@/lib/landing";
 import { RESORTS } from "@/lib/resorts";
 import { TRACKED } from "@/lib/price";
+import { getDishPages } from "@/lib/dishes";
 import { Pool } from "pg";
 
 export const revalidate = 86400;
@@ -12,6 +13,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const land = LANDINGS.map((l) => ({ url: `${BASE}/best/${l.slug}` }));
   const res = RESORTS.map((r) => ({ url: `${BASE}/resort/${r.slug}` }));
   const price = TRACKED.map((t) => ({ url: `${BASE}/price/${t.slug}` }));
+  const curatedSlugs = new Set(TRACKED.map((t) => t.slug));
+  const dishes = (await getDishPages(3)).filter((d) => !curatedSlugs.has(d.dish)).map((d) => ({ url: `${BASE}/price/${d.dish}` }));
   let venues: { url: string }[] = [];
   if (process.env.DATABASE_URL) {
     try {
@@ -23,5 +26,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       await pool.end();
     } catch { /* build without DB is fine */ }
   }
-  return [...core, ...land, ...res, ...price, ...venues];
+  return [...core, ...land, ...res, ...price, ...dishes, ...venues];
 }

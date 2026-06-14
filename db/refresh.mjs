@@ -16,6 +16,7 @@ const steps = [
   ["db/discover.mjs", {}],
   ["db/scrape.mjs", process.env.FORCE_REPARSE ? { FORCE_REPARSE: "1" } : {}],
   ["db/menus.mjs", {}],
+  ["db/dishes.mjs", {}],
 ];
 
 for (const [file, extra] of steps) {

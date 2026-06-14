@@ -55,8 +55,13 @@ export async function getPriceComparison(item: TrackedItem): Promise<PriceRow[]>
               mi.price AS price, mi.name AS label, '' AS days, '' AS start_time, '' AS end_time, mi.last_seen_at
        FROM menu_items mi JOIN venues v ON v.id = mi.venue_id
        WHERE mi.price IS NOT NULL AND mi.price > 0 AND lower(mi.name) LIKE ANY($1)`, [pats]);
-    const [a, b, c] = await Promise.all([fromItems, fromSummary, fromMenu]);
-    const all = [...a.rows, ...b.rows, ...c.rows].map((r: any) => ({ ...r, price: Number(r.price) })).filter((r) => r.price > 0 && r.price < 100);
+    const fromDish = p.query(
+      `SELECT v.id venue_id, v.name venue, v.neighborhood, v.lat, v.lng, v.rating,
+              mi.price AS price, mi.name AS label, '' AS days, '' AS start_time, '' AS end_time, mi.last_seen_at
+       FROM menu_items mi JOIN venues v ON v.id = mi.venue_id
+       WHERE mi.dish = $1 AND mi.price > 0`, [item.slug]);
+    const [a, b, c, d] = await Promise.all([fromItems, fromSummary, fromMenu, fromDish]);
+    const all = [...a.rows, ...b.rows, ...c.rows, ...d.rows].map((r: any) => ({ ...r, price: Number(r.price) })).filter((r) => r.price > 0 && r.price < 1000);
     // keep the lowest price per venue
     const byVenue = new Map<string, PriceRow>();
     for (const r of all) {

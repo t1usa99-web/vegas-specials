@@ -37,6 +37,11 @@ export const MIGRATIONS = [
      category TEXT, section TEXT, source_url TEXT, last_seen_at TIMESTAMPTZ DEFAULT now())`,
   `CREATE INDEX IF NOT EXISTS idx_menu_items_venue ON menu_items(venue_id)`,
   `CREATE INDEX IF NOT EXISTS idx_menu_items_cat ON menu_items(category)`,
+  `ALTER TABLE menu_items ADD COLUMN IF NOT EXISTS dish       TEXT`,
+  `ALTER TABLE menu_items ADD COLUMN IF NOT EXISTS dish_label TEXT`,
+  `CREATE INDEX IF NOT EXISTS idx_menu_items_dish ON menu_items(dish)`,
+  `CREATE TABLE IF NOT EXISTS dish_map (
+     raw_name TEXT PRIMARY KEY, dish TEXT, dish_label TEXT, created_at TIMESTAMPTZ DEFAULT now())`,
   // ---- events (Ticketmaster / SeatGeek ingestion) ----
   `CREATE TABLE IF NOT EXISTS events (
      id TEXT PRIMARY KEY, source TEXT, name TEXT, category TEXT,

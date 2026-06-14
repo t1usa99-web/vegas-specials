@@ -1,26 +1,43 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTracked, getPriceComparison, TRACKED } from "@/lib/price";
+import { getDishMeta, getDishComparison, getDishPages } from "@/lib/dishes";
 import PriceTable from "@/components/PriceTable";
 import { robotsMeta, THIN } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
+const dishIntro = (label: string) =>
+  `Every ${label.toLowerCase()} price we can find across Las Vegas — sort low to high for the cheapest, or high to low for the priciest in town.`;
+const dishH1 = (label: string) => `${label} Prices in Las Vegas — Cheapest to Most Expensive`;
+
+async function resolve(slug: string) {
+  const t = getTracked(slug);
+  if (t) return { h1: t.h1, intro: t.intro, rows: await getPriceComparison(t) };
+  const d = await getDishMeta(slug);
+  if (!d) return null;
+  return { h1: dishH1(d.label), intro: dishIntro(d.label), rows: await getDishComparison(d.dish, d.label) };
+}
+
 export async function generateMetadata({ params }: { params: { item: string } }) {
-  const t = getTracked(params.item);
-  if (!t) return {};
-  const rows = await getPriceComparison(t);
-  return { title: `${t.h1} (Live, Sortable) | VegasSpecials`, description: t.intro, ...robotsMeta(rows.length < THIN.price) };
+  const r = await resolve(params.item);
+  if (!r) return {};
+  return { title: `${r.h1} (Live, Sortable) | VegasSpecials`, description: r.intro, ...robotsMeta(r.rows.length < THIN.price) };
 }
 
 const monthYear = () => new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
 export default async function PricePage({ params }: { params: { item: string } }) {
-  const t = getTracked(params.item);
-  if (!t) notFound();
-  const rows = await getPriceComparison(t);
-  const cheapest = rows.length ? rows[0].price : null;
-  const related = TRACKED.filter((x) => x.slug !== t.slug).slice(0, 8);
+  const r = await resolve(params.item);
+  if (!r) notFound();
+  const cheapest = r.rows.length ? r.rows[0].price : null;
+
+  // related: curated items + top auto dishes, deduped, current excluded
+  const dishes = await getDishPages(3);
+  const relMap = new Map<string, string>();
+  for (const t of TRACKED) relMap.set(t.slug, t.label);
+  for (const d of dishes) if (!relMap.has(d.dish)) relMap.set(d.dish, d.label);
+  const related = [...relMap].filter(([slug]) => slug !== params.item).slice(0, 10);
 
   return (
     <>
@@ -31,17 +48,17 @@ export default async function PricePage({ params }: { params: { item: string } }
 
       <div className="wrap">
         <div className="land-head">
-          <h1>{t.h1}</h1>
-          <p className="land-intro">{t.intro}</p>
-          <div className="land-fresh"><span className="live-dot" /> {rows.length} venue{rows.length === 1 ? "" : "s"}{cheapest != null ? ` · from $${cheapest % 1 === 0 ? cheapest : cheapest.toFixed(2)}` : ""} · updated {monthYear()}</div>
+          <h1>{r.h1}</h1>
+          <p className="land-intro">{r.intro}</p>
+          <div className="land-fresh"><span className="live-dot" /> {r.rows.length} venue{r.rows.length === 1 ? "" : "s"}{cheapest != null ? ` · from $${cheapest % 1 === 0 ? cheapest : cheapest.toFixed(2)}` : ""} · updated {monthYear()}</div>
         </div>
 
-        <PriceTable rows={rows} />
+        <PriceTable rows={r.rows} />
 
         <div className="land-related">
           <h2>Compare other prices</h2>
           <div className="land-rel-row">
-            {related.map((x) => <Link key={x.slug} href={`/price/${x.slug}`} className="land-rel">{x.label}</Link>)}
+            {related.map(([slug, label]) => <Link key={slug} href={`/price/${slug}`} className="land-rel">{label}</Link>)}
           </div>
         </div>
       </div>
