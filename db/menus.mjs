@@ -10,18 +10,18 @@ const ANTHROPIC = process.env.ANTHROPIC_API_KEY;
 if (!FC || !ANTHROPIC) { console.error("FIRECRAWL_API_KEY + ANTHROPIC_API_KEY required"); process.exit(1); }
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 
-async function firecrawl(url, withLinks = false) {
+async function firecrawl(url) {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 20000);
+  const timer = setTimeout(() => ctrl.abort(), 14000);
   try {
     const r = await fetch("https://api.firecrawl.dev/v1/scrape", {
       method: "POST", headers: { Authorization: "Bearer " + FC, "Content-Type": "application/json" },
-      body: JSON.stringify({ url, formats: withLinks ? ["markdown", "links"] : ["markdown"], onlyMainContent: !withLinks, timeout: 14000 }),
+      body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true, timeout: 11000 }),
       signal: ctrl.signal,
     });
     const j = await r.json();
-    return j.data || {};
-  } catch { return {}; }
+    return j?.data?.markdown || "";
+  } catch { return ""; }
   finally { clearTimeout(timer); }
 }
 
@@ -52,11 +52,8 @@ async function parseMenu(md) {
 
 async function processVenue(v) {
   try {
-    const home = await firecrawl(v.website, true);
-    let menuUrl = findMenuUrl(home, v.website);
-    let md;
-    if (menuUrl) { md = (await firecrawl(menuUrl)).markdown || ""; }
-    else { md = home.markdown || ""; menuUrl = v.website; }
+    const md = await firecrawl(v.website);
+    const menuUrl = v.website;
     if (!md || md.length < 120) { await pool.query("UPDATE venues SET menu_scraped_at=now() WHERE id=$1", [v.id]); return { empty: 1 }; }
     const items = await parseMenu(md);
     const valid = items.filter((it) => it && it.name && typeof it.price === "number" && it.price > 0 && it.price < 5000).slice(0, 150);
