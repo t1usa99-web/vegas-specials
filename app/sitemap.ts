@@ -9,7 +9,7 @@ export const revalidate = 86400;
 const BASE = "https://vegasontap.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const core = ["", "/best", "/resort", "/price", "/map", "/blog"].map((p) => ({ url: BASE + p }));
+  const core = ["", "/best", "/resort", "/price", "/resort-fees", "/map", "/blog"].map((p) => ({ url: BASE + p }));
   const land = LANDINGS.map((l) => ({ url: `${BASE}/best/${l.slug}` }));
   const res = RESORTS.map((r) => ({ url: `${BASE}/resort/${r.slug}` }));
   const price = TRACKED.map((t) => ({ url: `${BASE}/price/${t.slug}` }));

@@ -17,6 +17,7 @@ export default async function PriceIndex() {
       </div></div>
       <div className="wrap">
         <div className="land-head"><h1>What does it cost in Vegas?</h1><p className="land-intro">Live price comparisons across every venue we track — sort by lowest price, highest, or closest to you. The thing no Vegas blog can do.</p></div>
+        <Link href="/resort-fees" className="card" style={{ display: "block", marginBottom: 14, borderColor: "var(--accent)" }}><div className="c-name" style={{ fontSize: 16 }}>🏨 Resort Fees & Parking by Hotel →</div><div className="c-type" style={{ marginTop: 4 }}>Every hotel's resort fee + parking, sortable. See who has free parking and no resort fee.</div></Link>
 
         <div className="list">
           {TRACKED.map((t) => (
