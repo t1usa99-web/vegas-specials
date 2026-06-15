@@ -32,6 +32,7 @@ export const MIGRATIONS = [
   `ALTER TABLE specials ADD COLUMN IF NOT EXISTS last_seen_at   TIMESTAMPTZ`,
   // ---- menu items (full-menu price scraping) ----
   `ALTER TABLE venues ADD COLUMN IF NOT EXISTS menu_scraped_at TIMESTAMPTZ`,
+  `ALTER TABLE venues ADD COLUMN IF NOT EXISTS merged_into TEXT`,
   `CREATE TABLE IF NOT EXISTS menu_items (
      id SERIAL PRIMARY KEY, venue_id TEXT, name TEXT, price NUMERIC,
      category TEXT, section TEXT, source_url TEXT, last_seen_at TIMESTAMPTZ DEFAULT now())`,

@@ -26,7 +26,7 @@ export async function getChildren(id: string): Promise<any[]> {
       `SELECT v.id, v.name, v.type, v.rating, v.photo_ref,
               COUNT(s.id) FILTER (WHERE s.status='live' AND (s.valid_until IS NULL OR s.valid_until >= CURRENT_DATE)) AS deal_count
        FROM venues v LEFT JOIN specials s ON s.venue_id = v.id
-       WHERE v.parent_id = $1
+       WHERE v.parent_id = $1 AND v.merged_into IS NULL
        GROUP BY v.id ORDER BY deal_count DESC, v.rating DESC NULLS LAST`, [id]);
     return rows;
   } catch { return []; }

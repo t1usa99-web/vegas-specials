@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getVenue, getVenueSpecials, getNearby, getChildren, getAggregateSpecials, getMenuItems } from "@/lib/venue";
 import SaveButton from "@/components/SaveButton";
 import { verifyLabel } from "@/lib/trust";
@@ -21,6 +21,7 @@ const dollars = (n: number | null) => n == null ? "" : "$".repeat(Math.min(4, n 
 export default async function VenuePage({ params }: { params: { id: string } }) {
   const v = await getVenue(params.id);
   if (!v) notFound();
+  if (v.merged_into) redirect(`/venue/${v.merged_into}`);
   const specials = await getVenueSpecials(params.id);
   const photos: string[] = Array.isArray(v.photos) ? v.photos : [];
   const reviews: any[] = Array.isArray(v.reviews) ? v.reviews : [];

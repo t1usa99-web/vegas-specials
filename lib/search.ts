@@ -12,7 +12,7 @@ export async function searchAll(q: string): Promise<{ venues: any[]; deals: any[
       `SELECT v.id, v.name, v.neighborhood, v.rating, v.cuisine,
               COUNT(s.id) FILTER (WHERE s.status='live' AND (s.valid_until IS NULL OR s.valid_until >= CURRENT_DATE)) AS deal_count
        FROM venues v LEFT JOIN specials s ON s.venue_id = v.id
-       WHERE v.name ILIKE $1 OR v.neighborhood ILIKE $1 OR v.cuisine ILIKE $1 OR v.vibe_tags::text ILIKE $1
+       WHERE v.merged_into IS NULL AND (v.name ILIKE $1 OR v.neighborhood ILIKE $1 OR v.cuisine ILIKE $1 OR v.vibe_tags::text ILIKE $1)
        GROUP BY v.id ORDER BY deal_count DESC, (v.rating IS NULL), v.rating DESC LIMIT 14`, [like]);
     const deals = p.query(
       `SELECT s.id, s.summary, s.days, s.start_time, s.end_time, s.price, v.id venue_id, v.name venue, v.neighborhood
