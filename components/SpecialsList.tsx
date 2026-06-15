@@ -148,6 +148,9 @@ export default function SpecialsList({ initial }: { initial: Special[] }) {
         <div className="box">{ICON.search}
           <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && q.trim().length >= 2) router.push(`/search?q=${encodeURIComponent(q.trim())}`); }} placeholder="Search venues, deals, neighborhoods… (Enter for all)" />
         </div>
+        {q.trim().length >= 2 && (
+          <a className="searchall" onClick={() => router.push("/search?q=" + encodeURIComponent(q.trim()))} style={{ display: "block", marginTop: 6, color: "var(--accent)", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Search all venues, deals &amp; events for &ldquo;{q.trim()}&rdquo; &rarr;</a>
+        )}
       </div>
 
       <div className="catnav">
@@ -199,7 +202,7 @@ export default function SpecialsList({ initial }: { initial: Special[] }) {
           </div>
             <div className="list">
               {shown.length === 0 && (
-                <div className="empty"><b>Nothing matches yet</b>Try a different filter or search. <a onClick={() => { setSub("all"); setQ(""); }}>Reset</a></div>
+                <div className="empty"><b>{q.trim().length >= 2 ? 'No happy hours match "' + q.trim() + '"' : "Nothing matches yet"}</b>{q.trim().length >= 2 ? (<>Try <a onClick={() => router.push("/search?q=" + encodeURIComponent(q.trim()))}>searching all venues, deals &amp; events &rarr;</a> or <a onClick={() => { setSub("all"); setQ(""); }}>reset</a>.</>) : (<>Try a different filter or search. <a onClick={() => { setSub("all"); setQ(""); }}>Reset</a></>)}</div>
               )}
               {shown.map(({ s, open }, i) => {
                 const _hasTime = s.start_time && s.start_time !== "TBD" && s.start_time !== "null";
