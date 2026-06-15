@@ -28,6 +28,14 @@ export default function BestHub() {
             <div className="c-name" style={{ fontSize: 16 }}>🎰 Loosest slots in Las Vegas</div>
             <div className="c-type" style={{ marginTop: 4 }}>Official Nevada Gaming Control Board payback data — which areas and denominations actually pay back the most.</div>
           </Link>
+          <Link href="/best-odds" className="card" style={{ display: "block" }}>
+            <div className="c-name" style={{ fontSize: 16 }}>🃏 Best odds in Las Vegas</div>
+            <div className="c-type" style={{ marginTop: 4 }}>Every casino game ranked by real house edge — and what the casinos actually win. Blackjack to keno.</div>
+          </Link>
+          <Link href="/free-things-to-do" className="card" style={{ display: "block" }}>
+            <div className="c-name" style={{ fontSize: 16 }}>🎆 Free things to do in Las Vegas</div>
+            <div className="c-type" style={{ marginTop: 4 }}>The best things in Vegas that cost nothing — fountains, light shows, the Sphere and more.</div>
+          </Link>
           {LANDINGS.map((l) => (
             <Link key={l.slug} href={`/best/${l.slug}`} className="card" style={{ display: "block" }}>
               <div className="c-name" style={{ fontSize: 16 }}>{l.h1}</div>
