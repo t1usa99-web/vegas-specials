@@ -3,13 +3,14 @@ import { LANDINGS } from "@/lib/landing";
 import { RESORTS } from "@/lib/resorts";
 import { TRACKED } from "@/lib/price";
 import { getDishPages } from "@/lib/dishes";
+import { LEGAL } from "@/lib/legal";
 import { Pool } from "pg";
 
 export const revalidate = 86400;
 const BASE = "https://vegasontap.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const core = ["", "/best", "/resort", "/price", "/resort-fees", "/loosest-slots", "/best-odds", "/free-things-to-do", "/map", "/blog"].map((p) => ({ url: BASE + p }));
+  const core = ["", "/best", "/resort", "/price", "/resort-fees", "/loosest-slots", "/best-odds", "/free-things-to-do", "/buffets", "/map", "/blog"].map((p) => ({ url: BASE + p }));
   const land = LANDINGS.map((l) => ({ url: `${BASE}/best/${l.slug}` }));
   const res = RESORTS.map((r) => ({ url: `${BASE}/resort/${r.slug}` }));
   const price = TRACKED.map((t) => ({ url: `${BASE}/price/${t.slug}` }));
@@ -26,5 +27,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       await pool.end();
     } catch { /* build without DB is fine */ }
   }
-  return [...core, ...land, ...res, ...price, ...dishes, ...venues];
+  const legal = LEGAL.map((d) => ({ url: `${BASE}/legal/${d.slug}` }));
+  return [...core, ...land, ...res, ...price, ...dishes, ...legal, ...venues];
 }

@@ -36,6 +36,10 @@ export default function BestHub() {
             <div className="c-name" style={{ fontSize: 16 }}>🎆 Free things to do in Las Vegas</div>
             <div className="c-type" style={{ marginTop: 4 }}>The best things in Vegas that cost nothing — fountains, light shows, the Sphere and more.</div>
           </Link>
+          <Link href="/buffets" className="card" style={{ display: "block" }}>
+            <div className="c-name" style={{ fontSize: 16 }}>🍽️ Las Vegas buffet prices</div>
+            <div className="c-type" style={{ marginTop: 4 }}>Every open buffet, sortable cheapest to priciest — brunch and dinner costs by hotel.</div>
+          </Link>
           {LANDINGS.map((l) => (
             <Link key={l.slug} href={`/best/${l.slug}`} className="card" style={{ display: "block" }}>
               <div className="c-name" style={{ fontSize: 16 }}>{l.h1}</div>

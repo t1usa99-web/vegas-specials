@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
+import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
   title: "Vegas Specials — happy hours & deals near you, verified",
@@ -13,7 +14,7 @@ export const viewport: Viewport = { themeColor: "#2A1A4A", width: "device-width"
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>{children}<SiteFooter /></body>
     </html>
   );
 }

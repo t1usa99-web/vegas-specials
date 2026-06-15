@@ -19,6 +19,7 @@ const steps = [
   ["db/dishes.mjs", {}],
   ["db/dedupe.mjs", { DEDUPE_COMMIT: "1" }],
   ["db/resort-link.mjs", { RESORT_LINK_COMMIT: "1" }],
+  ["db/healthcheck.mjs", {}],
 ];
 
 for (const [file, extra] of steps) {
