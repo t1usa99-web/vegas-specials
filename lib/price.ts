@@ -43,18 +43,19 @@ export async function getPriceComparison(item: TrackedItem): Promise<PriceRow[]>
        FROM specials sp JOIN venues v ON v.id = sp.venue_id
        CROSS JOIN LATERAL jsonb_array_elements(COALESCE(sp.items, '[]'::jsonb)) AS it
        WHERE ${guard} AND (it->>'price') ~ '^[0-9]+(\\.[0-9]+)?$'
-         AND lower(it->>'name') LIKE ANY($1)`, [pats]);
+         AND lower(it->>'name') LIKE ANY($1)
+         AND lower(it->>'name') !~ 'taco|burrito|quesadilla|torta|nacho|empanada|cheesesteak|philly|fried rice|ramen|spring roll|egg roll|dumpling|pizza|sandwich|wrap|slider'`, [pats]);
     const fromSummary = p.query(
       `SELECT v.id venue_id, v.name venue, v.neighborhood, v.lat, v.lng, v.rating,
               sp.price AS price, sp.summary AS label,
               sp.days, sp.start_time, sp.end_time, sp.last_seen_at
        FROM specials sp JOIN venues v ON v.id = sp.venue_id
-       WHERE ${guard} AND sp.price IS NOT NULL AND lower(sp.summary) LIKE ANY($1)`, [pats]);
+       WHERE ${guard} AND sp.price IS NOT NULL AND lower(sp.summary) LIKE ANY($1) AND lower(sp.summary) !~ 'taco|burrito|quesadilla|torta|nacho|empanada|cheesesteak|philly|fried rice|ramen|spring roll|egg roll|dumpling|pizza|sandwich|wrap|slider'`, [pats]);
     const fromMenu = p.query(
       `SELECT v.id venue_id, v.name venue, v.neighborhood, v.lat, v.lng, v.rating,
               mi.price AS price, mi.name AS label, '' AS days, '' AS start_time, '' AS end_time, mi.last_seen_at
        FROM menu_items mi JOIN venues v ON v.id = mi.venue_id
-       WHERE mi.price IS NOT NULL AND mi.price > 0 AND lower(mi.name) LIKE ANY($1)`, [pats]);
+       WHERE mi.price IS NOT NULL AND mi.price > 0 AND lower(mi.name) LIKE ANY($1) AND lower(mi.name) !~ 'taco|burrito|quesadilla|torta|nacho|empanada|cheesesteak|philly|fried rice|ramen|spring roll|egg roll|dumpling|pizza|sandwich|wrap|slider'`, [pats]);
     const fromDish = p.query(
       `SELECT v.id venue_id, v.name venue, v.neighborhood, v.lat, v.lng, v.rating,
               mi.price AS price, mi.name AS label, '' AS days, '' AS start_time, '' AS end_time, mi.last_seen_at

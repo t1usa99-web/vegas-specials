@@ -202,7 +202,8 @@ export default function SpecialsList({ initial }: { initial: Special[] }) {
                 <div className="empty"><b>Nothing matches yet</b>Try a different filter or search. <a onClick={() => { setSub("all"); setQ(""); }}>Reset</a></div>
               )}
               {shown.map(({ s, open }, i) => {
-                const timing = s.days + sep + s.start_time + (s.end_time && s.end_time !== s.start_time ? "–" + s.end_time : "");
+                const _hasTime = s.start_time && s.start_time !== "TBD" && s.start_time !== "null";
+                const timing = _hasTime ? (s.days || "Daily") + sep + s.start_time + (s.end_time && s.end_time !== s.start_time ? "–" + s.end_time : "") : (s.days || "Times vary");
                 return (
                   <Link key={i} href={`/venue/${s.venue_id}`} className={`card ${s._fresh ? "fresh" : ""}`}>
                     <div className="thumb" style={{ background: gradOf(s.venue_id) }}>
