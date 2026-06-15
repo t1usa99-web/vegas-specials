@@ -55,7 +55,7 @@ export async function getPriceComparison(item: TrackedItem): Promise<PriceRow[]>
       `SELECT v.id venue_id, v.name venue, v.neighborhood, v.lat, v.lng, v.rating,
               mi.price AS price, mi.name AS label, '' AS days, '' AS start_time, '' AS end_time, mi.last_seen_at
        FROM menu_items mi JOIN venues v ON v.id = mi.venue_id
-       WHERE mi.price IS NOT NULL AND mi.price > 0 AND lower(mi.name) LIKE ANY($1) AND lower(mi.name) !~ 'taco|burrito|quesadilla|torta|nacho|empanada|cheesesteak|philly|fried rice|ramen|spring roll|egg roll|dumpling|pizza|sandwich|wrap|slider'`, [pats]);
+       WHERE mi.price > 0 AND mi.dish IS NOT NULL AND mi.dish <> '' AND (lower(mi.dish_label) LIKE ANY($1) OR lower(mi.dish) LIKE ANY($1))`, [pats]);
     const fromDish = p.query(
       `SELECT v.id venue_id, v.name venue, v.neighborhood, v.lat, v.lng, v.rating,
               mi.price AS price, mi.name AS label, '' AS days, '' AS start_time, '' AS end_time, mi.last_seen_at
