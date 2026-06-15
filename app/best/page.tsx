@@ -20,6 +20,14 @@ export default function BestHub() {
             <div className="c-name" style={{ fontSize: 16 }}>Happy hours by resort</div>
             <div className="c-type" style={{ marginTop: 4 }}>Every property's deals in one place — ARIA, Bellagio, Caesars, MGM Resorts, Station Casinos and more.</div>
           </Link>
+          <Link href="/resort-fees" className="card" style={{ display: "block" }}>
+            <div className="c-name" style={{ fontSize: 16 }}>🏨 Resort fees & parking by hotel</div>
+            <div className="c-type" style={{ marginTop: 4 }}>Sortable table of every hotel's resort fee and parking cost — who has free parking, who has no resort fee.</div>
+          </Link>
+          <Link href="/loosest-slots" className="card" style={{ display: "block" }}>
+            <div className="c-name" style={{ fontSize: 16 }}>🎰 Loosest slots in Las Vegas</div>
+            <div className="c-type" style={{ marginTop: 4 }}>Official Nevada Gaming Control Board payback data — which areas and denominations actually pay back the most.</div>
+          </Link>
           {LANDINGS.map((l) => (
             <Link key={l.slug} href={`/best/${l.slug}`} className="card" style={{ display: "block" }}>
               <div className="c-name" style={{ fontSize: 16 }}>{l.h1}</div>
