@@ -24,6 +24,11 @@ const REGISTRY = {
   "mgm grand": { id: "v_mgmgrand", name: "MGM Grand Hotel & Casino", lat: 36.1025, lng: -115.1686, addr: "MGM Grand, 3799 S Las Vegas Blvd, Las Vegas, NV 89109" },
   "3799 s las vegas blvd": { id: "v_mgmgrand", name: "MGM Grand Hotel & Casino", lat: 36.1025, lng: -115.1686, addr: "MGM Grand, 3799 S Las Vegas Blvd, Las Vegas, NV 89109" },
   "3570 s las vegas blvd": { id: "v_caesarspalace", name: "Caesars Palace", lat: 36.1162, lng: -115.1745, addr: "3570 Las Vegas Blvd S, Las Vegas, NV 89109" },
+  "3535 las vegas blvd s": { id: "v_linq", name: "The LINQ Hotel & Casino", lat: 36.1175, lng: -115.1701, addr: "3535 Las Vegas Blvd S, Las Vegas, NV 89109" },
+  "3535 s las vegas blvd": { id: "v_linq", name: "The LINQ Hotel & Casino", lat: 36.1175, lng: -115.1701, addr: "3535 Las Vegas Blvd S, Las Vegas, NV 89109" },
+  "3475 las vegas blvd s": { id: "v_harrahs", name: "Harrah's Las Vegas", lat: 36.1199, lng: -115.1710, addr: "3475 Las Vegas Blvd S, Las Vegas, NV 89109" },
+  "3850 s las vegas blvd": { id: "v_excalibur", name: "Excalibur Hotel & Casino", lat: 36.0989, lng: -115.1755, addr: "3850 S Las Vegas Blvd, Las Vegas, NV 89109" },
+  "3000 paradise rd": { id: "v_westgate", name: "Westgate Las Vegas Resort & Casino", lat: 36.1357, lng: -115.1518, addr: "3000 Paradise Rd, Las Vegas, NV 89109" },
 };
 
 async function main() {
