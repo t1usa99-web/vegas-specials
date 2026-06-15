@@ -22,7 +22,7 @@ export async function getSpecials(): Promise<Special[]> {
     const { rows } = await p.query(
       `SELECT s.*, v.name AS venue, v.type, v.neighborhood, v.walk_min
        FROM specials s JOIN venues v ON v.id = s.venue_id
-       WHERE s.status = 'live' AND (s.valid_until IS NULL OR s.valid_until >= CURRENT_DATE)
+       WHERE s.status = 'live' AND (s.valid_until IS NULL OR s.valid_until >= CURRENT_DATE) AND v.hidden IS NOT TRUE
        ORDER BY s.confidence DESC`
     );
     if (!rows.length) return SEED;

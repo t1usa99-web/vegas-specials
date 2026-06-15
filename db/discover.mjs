@@ -77,6 +77,7 @@ async function main() {
         const lat = p.location?.latitude || null, lng = p.location?.longitude || null;
         const addr = p.formattedAddress || "";
         if (!name) continue;
+        if (lat == null || lng == null || lat < 35.85 || lat > 36.42 || lng < -115.45 || lng > -114.90) continue; // Vegas metro only
         await pool.query(
           `INSERT INTO venues (id,name,type,neighborhood,address,lat,lng,walk_min,google_place_id)
            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, address=EXCLUDED.address`,

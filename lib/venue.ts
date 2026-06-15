@@ -11,7 +11,7 @@ export async function getNearby(lat: number, lng: number, excludeId: string, lim
       `SELECT v.id, v.name, v.neighborhood, v.rating, v.photo_ref,
               MIN(sp.price) FILTER (WHERE sp.price IS NOT NULL) AS cheapest, COUNT(sp.id) AS deal_count
        FROM venues v JOIN specials sp ON sp.venue_id = v.id AND sp.status='live' AND (sp.valid_until IS NULL OR sp.valid_until >= CURRENT_DATE)
-       WHERE v.id <> $3 AND v.lat IS NOT NULL AND v.lng IS NOT NULL
+       WHERE v.id <> $3 AND v.lat IS NOT NULL AND v.lng IS NOT NULL AND v.hidden IS NOT TRUE
        GROUP BY v.id
        ORDER BY ((v.lat-$1)*(v.lat-$1)+(v.lng-$2)*(v.lng-$2)) ASC
        LIMIT $4`, [lat, lng, excludeId, limit]);

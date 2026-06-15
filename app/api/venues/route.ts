@@ -15,7 +15,7 @@ export async function GET() {
         COUNT(sp.id) AS deal_count,
         json_agg(json_build_object('summary', sp.summary, 'price', sp.price, 'food', sp.food, 'drink', sp.drink, 'freebie', sp.freebie, 'days', sp.days, 'start', sp.start_time, 'end', sp.end_time) ORDER BY sp.confidence DESC) AS specials
       FROM venues v JOIN specials sp ON sp.venue_id = v.id AND sp.status = 'live'
-      WHERE v.lat IS NOT NULL AND v.lng IS NOT NULL
+      WHERE v.lat IS NOT NULL AND v.lng IS NOT NULL AND v.hidden IS NOT TRUE
       GROUP BY v.id`);
     return NextResponse.json({ venues: rows });
   } catch (e) { return NextResponse.json({ venues: [], error: String(e) }, { status: 500 }); }

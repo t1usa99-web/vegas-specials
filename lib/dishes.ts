@@ -13,7 +13,7 @@ export async function getDishPages(minVenues = 3): Promise<DishPage[]> {
     const { rows } = await p.query(
       `SELECT dish, dish_label AS label, count(DISTINCT venue_id)::int AS venues, count(*)::int AS items,
               min(price)::numeric AS min_price, max(price)::numeric AS max_price
-       FROM menu_items WHERE dish IS NOT NULL AND dish <> '' AND price > 0
+       FROM menu_items WHERE dish IS NOT NULL AND dish <> '' AND price > 0 AND venue_id NOT IN (SELECT id FROM venues WHERE hidden)
        GROUP BY dish, dish_label HAVING count(DISTINCT venue_id) >= $1
        ORDER BY venues DESC, items DESC`, [minVenues]);
     return rows.map((r: any) => ({ ...r, min_price: Number(r.min_price), max_price: Number(r.max_price) }));
@@ -38,13 +38,13 @@ export async function getDishComparison(slug: string, label: string): Promise<Pr
       `SELECT v.id venue_id, v.name venue, v.neighborhood, v.lat, v.lng, v.rating,
               mi.price AS price, mi.name AS label, '' AS days, '' AS start_time, '' AS end_time, mi.last_seen_at
        FROM menu_items mi JOIN venues v ON v.id = mi.venue_id
-       WHERE mi.dish = $1 AND mi.price > 0`, [slug]);
+       WHERE mi.dish = $1 AND mi.price > 0 AND v.hidden IS NOT TRUE`, [slug]);
     const fromSpecials = p.query(
       `SELECT v.id venue_id, v.name venue, v.neighborhood, v.lat, v.lng, v.rating,
               (it->>'price')::numeric AS price, it->>'name' AS label, sp.days, sp.start_time, sp.end_time, sp.last_seen_at
        FROM specials sp JOIN venues v ON v.id = sp.venue_id
        CROSS JOIN LATERAL jsonb_array_elements(COALESCE(sp.items, '[]'::jsonb)) AS it
-       WHERE sp.status='live' AND (sp.valid_until IS NULL OR sp.valid_until >= CURRENT_DATE)
+       WHERE sp.status='live' AND (sp.valid_until IS NULL OR sp.valid_until >= CURRENT_DATE) AND v.hidden IS NOT TRUE
          AND (it->>'price') ~ '^[0-9]+(\\.[0-9]+)?$' AND lower(it->>'name') LIKE $2`, [slug, pat]);
     const [a, b] = await Promise.all([fromMenu, fromSpecials]);
     const all = [...a.rows, ...b.rows].map((r: any) => ({ ...r, price: Number(r.price) })).filter((r) => r.price > 0 && r.price < 1000);

@@ -20,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     try {
       const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const { rows } = await pool.query(
-        `SELECT DISTINCT v.id FROM venues v JOIN specials s ON s.venue_id = v.id
+        `SELECT DISTINCT v.id FROM venues v JOIN specials s ON s.venue_id = v.id AND v.hidden IS NOT TRUE
          AND s.status='live' AND (s.valid_until IS NULL OR s.valid_until >= CURRENT_DATE)`);
       venues = rows.map((r: any) => ({ url: `${BASE}/venue/${r.id}` }));
       await pool.end();

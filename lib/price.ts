@@ -34,7 +34,7 @@ export type PriceRow = { venue_id: string; venue: string; neighborhood: string; 
 export async function getPriceComparison(item: TrackedItem): Promise<PriceRow[]> {
   const p = gp(); if (!p) return [];
   const pats = item.keywords.map((k) => `%${k.toLowerCase()}%`);
-  const guard = "sp.status='live' AND (sp.valid_until IS NULL OR sp.valid_until >= CURRENT_DATE)";
+  const guard = "sp.status='live' AND (sp.valid_until IS NULL OR sp.valid_until >= CURRENT_DATE) AND v.hidden IS NOT TRUE";
   try {
     const fromItems = p.query(
       `SELECT v.id venue_id, v.name venue, v.neighborhood, v.lat, v.lng, v.rating,
@@ -55,12 +55,12 @@ export async function getPriceComparison(item: TrackedItem): Promise<PriceRow[]>
       `SELECT v.id venue_id, v.name venue, v.neighborhood, v.lat, v.lng, v.rating,
               mi.price AS price, mi.name AS label, '' AS days, '' AS start_time, '' AS end_time, mi.last_seen_at
        FROM menu_items mi JOIN venues v ON v.id = mi.venue_id
-       WHERE mi.price > 0 AND mi.dish IS NOT NULL AND mi.dish <> '' AND (lower(mi.dish_label) LIKE ANY($1) OR lower(mi.dish) LIKE ANY($1))`, [pats]);
+       WHERE mi.price > 0 AND mi.dish IS NOT NULL AND mi.dish <> '' AND v.hidden IS NOT TRUE AND (lower(mi.dish_label) LIKE ANY($1) OR lower(mi.dish) LIKE ANY($1))`, [pats]);
     const fromDish = p.query(
       `SELECT v.id venue_id, v.name venue, v.neighborhood, v.lat, v.lng, v.rating,
               mi.price AS price, mi.name AS label, '' AS days, '' AS start_time, '' AS end_time, mi.last_seen_at
        FROM menu_items mi JOIN venues v ON v.id = mi.venue_id
-       WHERE mi.dish = $1 AND mi.price > 0`, [item.slug]);
+       WHERE mi.dish = $1 AND mi.price > 0 AND v.hidden IS NOT TRUE`, [item.slug]);
     const [a, b, c, d] = await Promise.all([fromItems, fromSummary, fromMenu, fromDish]);
     const all = [...a.rows, ...b.rows, ...c.rows, ...d.rows].map((r: any) => ({ ...r, price: Number(r.price) })).filter((r) => r.price > 0 && r.price < 1000);
     // keep the lowest price per venue
